@@ -1274,20 +1274,68 @@ function buildMirrorFloor(){
 }
 function destroyMirrorFloor(){if(cubeCamera2){scene.remove(cubeCamera2);cubeRT&&cubeRT.dispose();cubeCamera2=null;cubeRT=null;}if(mirrorFloorMesh){scene.remove(mirrorFloorMesh);mirrorFloorMesh.geometry.dispose();mirrorFloorMesh.material.dispose();mirrorFloorMesh=null;}}
 
-function buildSweepMesh(sweepColor){
-  if(sweepMesh){scene.remove(sweepMesh);sweepMesh.geometry.dispose();sweepMesh.material.dispose();sweepMesh=null;}
-  const R=2.2,curveStart=-3.4-R,wallH=7,floorStart=-9;
-  const profile=[];
-  for(let i=0;i<=6;i++)profile.push([floorStart+(i/6)*(curveStart-floorStart),0]);
-  const curveSegs=20;
-  for(let i=0;i<=curveSegs;i++){const a=-Math.PI/2+(i/curveSegs)*Math.PI/2;profile.push([curveStart+Math.cos(a)*R,R+Math.sin(a)*R]);}
-  for(let i=1;i<=8;i++)profile.push([curveStart+R-R,-R+R+(i/8)*wallH]); // z=0 wall going up
-  const N=profile.length;const xSegs=4;const W=18;
-  const verts=[],uvs=[],inds=[];
-  for(let xi=0;xi<=xSegs;xi++){const x=-W/2+(xi/xSegs)*W;for(let pi=0;pi<N;pi++){verts.push(x,profile[pi][1],profile[pi][0]);uvs.push(xi/xSegs,pi/(N-1));}}
-  for(let xi=0;xi<xSegs;xi++){for(let pi=0;pi<N-1;pi++){const a=xi*N+pi,b=xi*N+pi+1,c=(xi+1)*N+pi,d=(xi+1)*N+pi+1;inds.push(a,b,c);inds.push(b,d,c);}}
-  const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(verts,3));geo.setAttribute('uv',new THREE.Float32BufferAttribute(uvs,2));geo.setIndex(inds);geo.computeVertexNormals();
-  sweepMesh=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({color:new THREE.Color(sweepColor),roughness:.93,metalness:0,side:THREE.DoubleSide}));sweepMesh.receiveShadow=true;scene.add(sweepMesh);
+function buildSweepMesh(sweepColor) {
+  if (sweepMesh) {
+    scene.remove(sweepMesh);
+    sweepMesh.geometry.dispose();
+    if(sweepMesh.material !== floorMat) sweepMesh.material.dispose();
+    sweepMesh = null;
+  }
+  
+  // 360 Derece TAM KAPALI Sonsuz Fon (Kapsül Stüdyo)
+  // Üst kısmı açık bırakıldığı için tavan siyah görünüyordu, şimdi tamamen kapalı bir kubbe (dome) ile birleşiyor.
+  const points = [];
+  const R_floor = 12; // Düz zeminin yarıçapı
+  const R_curve = 10; // Zemin ile duvar arasındaki yumuşak kavis
+  const H_wall = 15;  // Dik duvar yüksekliği
+  const R_wall = R_floor + R_curve; // 22
+  
+  // 1. Tavanın en tepe noktası (Kapsülün kubbe merkezi)
+  points.push(new THREE.Vector2(0, R_curve + H_wall + R_wall));
+
+  // 2. Tavan kavisi (Kubbe kısmı)
+  const roofSegs = 32;
+  for (let i = roofSegs - 1; i >= 0; i--) {
+      const a = (i / roofSegs) * (Math.PI / 2);
+      const x = R_wall * Math.cos(a);
+      const y = R_curve + H_wall + R_wall * Math.sin(a);
+      points.push(new THREE.Vector2(x, y));
+  }
+
+  // 3. Düz Duvar kısmı (Kubbeden zemine inen dik kısım)
+  points.push(new THREE.Vector2(R_wall, R_curve));
+
+  // 4. Zemin kavisi (Duvarın zemine yumuşak geçişi - Fillet)
+  const floorSegs = 32;
+  for (let i = floorSegs - 1; i >= 0; i--) {
+      const a = (i / floorSegs) * (Math.PI / 2);
+      const x = R_floor + R_curve - R_curve * Math.cos(a);
+      const y = R_curve * Math.sin(a);
+      points.push(new THREE.Vector2(x, y));
+  }
+
+  // 5. Zeminin tam merkezi
+  points.push(new THREE.Vector2(0, 0));
+
+  const geo = new THREE.LatheGeometry(points, 64);
+  
+  // Düzlemsel UV Mapping (Dokuların dairesel bozulmasını önler)
+  const pos = geo.attributes.position;
+  const uv = geo.attributes.uv;
+  for (let i = 0; i < pos.count; i++) {
+      const x = pos.getX(i);
+      const z = pos.getZ(i);
+      uv.setXY(i, (x / 24) + 0.5, (z / 24) + 0.5);
+  }
+
+  floorMat.color.set(sweepColor);
+  
+  // Zemin materyalini fona doğrudan uyguluyoruz. 
+  // Noktalar yukarıdan aşağı çizildiği için normaller zaten İÇE bakıyor. 
+  sweepMesh = new THREE.Mesh(geo, floorMat);
+  sweepMesh.position.y = -0.01; 
+  sweepMesh.receiveShadow = true;
+  scene.add(sweepMesh);
 }
 
 function setSweepMode(mode){
@@ -1297,7 +1345,13 @@ function setSweepMode(mode){
   else{if(sweepMesh){scene.remove(sweepMesh);sweepMesh.geometry.dispose();sweepMesh.material.dispose();sweepMesh=null;}}
 }
 document.querySelectorAll('[data-sweep]').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('[data-sweep]').forEach(b=>b.classList.remove('active'));btn.classList.add('active');setSweepMode(btn.dataset.sweep);}));
-document.getElementById('sweepColorPick').addEventListener('input',e=>{if(sweepMesh)sweepMesh.material.color.set(e.target.value);});
+document.getElementById('sweepColorPick').addEventListener('input',e=>{if(sweepMesh && sweepMesh.material.color)sweepMesh.material.color.set(e.target.value);});
+
+// Uygulama yüklendiğinde "Sonsuz Fon (Sweep)" modunu varsayılan yap
+setTimeout(() => {
+  const sweepBtn = document.querySelector('[data-sweep="sweep"]');
+  if(sweepBtn) sweepBtn.click();
+}, 250);
 
 /* ═══ HDRI/IBL ═══ */
 let pmremGen=null,envMapCache={},rgbeLoaded=false;
