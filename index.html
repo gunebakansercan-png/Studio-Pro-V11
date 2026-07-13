@@ -502,57 +502,6 @@ body.ar-mode #loadingOverlay,
 body.ar-mode #toast {
     display: none !important;
 }
-
-/* ── MOBILE RESPONSIVE LAYOUT (BOTTOM SHEETS) ── */
-@media (max-width: 768px) {
-  /* Header and Top Toolbar adjustments */
-  .header { padding: 10px 14px; gap: 6px; flex-direction: column; align-items: flex-start; }
-  .header h1 { font-size: 18px !important; }
-  .lang-select { font-size: 13px !important; padding: 4px 8px !important; }
-
-  #topToolbar { top: 70px; left: 50%; transform: translateX(-50%); width: 92%; justify-content: space-between; padding: 6px 12px; }
-  
-  /* Make interactive buttons larger */
-  .tb-btn { width: 36px; height: 36px; font-size: 17px; }
-  .sp-btn, .mat-btn, .scene-btn, .hdri-btn { padding: 12px 6px; font-size: 12px; }
-
-  /* Left Panel (ProductPanel) -> Bottom Sheet */
-  #productPanel {
-    top: auto !important; bottom: 0 !important; left: 0 !important; right: 0 !important;
-    width: 100% !important; max-height: 55vh !important;
-    border-radius: 20px 20px 0 0 !important;
-    border-left: none !important; border-bottom: none !important; border-right: none !important;
-    border-top: 1px solid var(--panel-border) !important;
-    transform: translateY(0) !important; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    z-index: 100 !important;
-  }
-  #productPanel.collapsed {
-    width: 100% !important; transform: translateY(calc(100% - 40px)) !important;
-  }
-  #productPanel.collapsed .pp-tabs, 
-  #productPanel.collapsed .pp-body { display: none !important; }
-  #productPanel.collapsed .pp-title-text { display: block !important; }
-  .pp-header { padding: 12px 16px !important; }
-
-  /* Right Panels -> Bottom Sheets */
-  #lightDetailPanel, #propLayerPanel {
-    top: auto !important; bottom: 0 !important; right: 0 !important; left: 0 !important;
-    width: 100% !important; height: 50vh !important; max-height: 50vh !important;
-    border-radius: 20px 20px 0 0 !important; border-left: none !important;
-    border-top: 1px solid var(--panel-border) !important;
-    z-index: 101 !important;
-  }
-  
-  /* Right panel toggles - keep them on right but larger for touch */
-  .rpanel-toggle { z-index: 102 !important; padding: 12px 0 !important; width: 36px !important; font-size: 12px !important; }
-
-  /* Diagram Panel - Hidden on mobile */
-  #diagramPanel { display: none !important; }
-
-  /* Reference Modal - Fullscreen */
-  #refMatchModal { width: 95% !important; height: 80% !important; max-height: none !important; }
-  .ref-modal-box { width: 100% !important; height: 100% !important; }
-}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/Pass.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
@@ -2541,38 +2490,48 @@ const CustomARButton = {
   createButton: function ( renderer ) {
     const button = document.createElement( 'button' );
     button.id = "btnStartAR";
+    button.style.display = 'none'; // Sadece desteklendiğinde mobilde görünür yap
     button.style.position = 'absolute';
-    button.style.bottom = '40px';
+    button.style.bottom = '20px';
     button.style.left = '50%';
     button.style.transform = 'translateX(-50%)';
-    button.style.padding = '16px 32px';
-    button.style.border = '2px solid rgba(255,255,255,0.8)';
-    button.style.borderRadius = '12px';
-    button.style.background = 'linear-gradient(45deg, #ff007f, #7f00ff)';
+    button.style.padding = '12px 24px';
+    button.style.border = '1px solid rgba(255,255,255,0.2)';
+    button.style.borderRadius = '8px';
+    button.style.background = 'linear-gradient(45deg, #10b981, #3b82f6)';
     button.style.color = '#fff';
-    button.style.font = 'bold 18px sans-serif';
+    button.style.font = 'bold 15px sans-serif';
     button.style.textAlign = 'center';
     button.style.cursor = 'pointer';
     button.style.outline = 'none';
     button.style.zIndex = '999999';
-    button.style.boxShadow = '0 8px 25px rgba(255, 0, 127, 0.6)';
+    button.style.boxShadow = '0 4px 15px rgba(16, 185, 129, 0.4)';
 
-    if ( 'xr' in navigator ) {
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+    if ( isMobile && 'xr' in navigator ) {
       navigator.xr.isSessionSupported( 'immersive-ar' ).then( function ( supported ) {
-        supported ? showStartAR() : showARNotSupported("Cihazınız AR desteklemiyor (veya HTTPS değil)");
+        if(supported) {
+          showStartAR();
+        } else {
+          showARNotSupported("Cihazınız AR desteklemiyor veya HTTPS bağlantısı yok.");
+        }
       } ).catch(err => {
         showARNotSupported("AR Kontrol Hatası: " + err.message);
       });
     } else {
-      showARNotSupported("Tarayıcınızda WebXR API bulunamadı (HTTPS gereklidir).");
+      // Eğer mobil değilse (bilgisayarsa) veya WebXR yoksa butonu hiç gösterme.
+      button.style.display = 'none';
     }
 
     function showARNotSupported(reason) {
+      // Artık bilgisayarlarda hiç gözükmüyor. 
+      // Sadece mobilde HTTPS yoksa "Desteklenmiyor" olarak soluk gözükür.
       button.style.display = 'block';
       button.style.background = '#666';
       button.style.boxShadow = 'none';
       button.style.cursor = 'not-allowed';
-      button.textContent = 'AR Desteklenmiyor';
+      button.style.textContent = 'AR Desteklenmiyor';
       button.onclick = function() {
         if(typeof toast === 'function') toast(reason, 4000);
         else alert(reason);
