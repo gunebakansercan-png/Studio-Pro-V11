@@ -1,0 +1,12 @@
+﻿<div id="diagramPanel">
+  <div class="ldp-header">
+    <div class="ldp-title">📐 Aydınlatma Diyagramı</div>
+    <span class="ldp-close" id="diagClose">✕</span>
+  </div>
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:15px;position:relative;">
+    <canvas id="diagCanvas" style="width:100%;aspect-ratio:1;background:rgba(0,0,0,.3);border-radius:50%;border:1px dashed rgba(255,255,255,.15);cursor:crosshair;touch-action:none;"></canvas>
+    <button id="btnExportDiag" style="margin-top:15px;width:100%;padding:10px;background:rgba(212,145,47,.15);border:1px solid var(--amber);color:var(--amber);border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;letter-spacing:.5px;transition:all .2s;">RAPORU İNDİR (JPG)</button>
+  </div>
+</div>
+
+
