@@ -510,6 +510,7 @@ body.ar-mode #toast {
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/BokehShader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/BokehPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/OBJLoader.js"></script>
 </head>
 <body>
 <canvas id="scene"></canvas>
@@ -985,15 +986,6 @@ body.ar-mode #toast {
 <div id="lightDetailPanel">
   <div class="ldp-header"><div class="ldp-title"><span class="ldp-dot" id="ldpDot"></span><span id="ldpName">Işık</span></div><span class="ldp-close" id="ldpClose">×</span></div>
   <div class="ldp-body">
-    <div class="ctrl-row" style="margin-bottom:8px;">
-      <div class="ctrl-lbl"><span>💡 Işık Tipi</span></div>
-      <select id="cLightType" class="lang-select" style="width:120px;">
-        <option value="rect">Softbox</option>
-        <option value="ring">Halka (Ring)</option>
-        <option value="octa">Octabox</option>
-        <option value="hard">Sert Işık</option>
-      </select>
-    </div>
     <div class="ctrl-row" style="margin-bottom:12px;">
       <div class="ctrl-lbl"><span>🎭 Gobo (Desen)</span></div>
       <select id="cGobo" class="lang-select" style="width:120px;">
@@ -1229,6 +1221,18 @@ renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
 renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 renderer.outputEncoding=THREE.sRGBEncoding;
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x121113);
+window.customLightObj = null;
+if (typeof THREE.OBJLoader !== 'undefined') {
+  new THREE.OBJLoader().load('Untitled.obj', (obj) => {
+    window.customLightObj = obj;
+    console.log('Özel ışık modeli (OBJ) başarıyla yüklendi!', obj);
+    if (typeof lightObjects !== 'undefined' && typeof updateLP === 'function') {
+      Object.keys(lightObjects).forEach(id => {
+        updateLP(id);
+      });
+    }
+  }, undefined, e => console.warn('Özel model (Untitled.obj) yüklenemedi, dosyanın GitHub reposunda olduğundan emin olun.', e));
+}
 const camera=new THREE.PerspectiveCamera(40,innerWidth/innerHeight,.1,100);
 function resize(){if(window.isRecording)return;renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();updateARFrame();}
 window.addEventListener('resize',resize);
@@ -1976,86 +1980,105 @@ function getGoboTexture(type) {
 function buildLight(sp){
   lCnt++;const id='l'+lCnt;const kelvin=sp.kelvin??5600;const col=kelvinToThreeColor(kelvin);
   const cfg={id,label:sp.label,color:col,kelvin,maxI:6,defPow:sp.power,ps:sp.ps||[1.1,1.4]};
-  const params={hAngle:sp.hAngle,vAngle:sp.vAngle,dist:sp.dist,spread:sp.spread,pen:sp.pen??0.45,blur:sp.blur??6,decay:sp.decay??1,diffOn:sp.diffOn??false,diffR:sp.diffR??0.6,diffD:sp.diffD??0.5,diffO:sp.diffO??0.55,lType:sp.lType??'rect',gobo:sp.gobo??'none'};
+  const params={hAngle:sp.hAngle,vAngle:sp.vAngle,dist:sp.dist,spread:sp.spread,pen:sp.pen??0.45,blur:sp.blur??6,decay:sp.decay??1,diffOn:sp.diffOn??false,diffR:sp.diffR??0.6,diffD:sp.diffD??0.5,diffO:sp.diffO??0.55,gobo:sp.gobo??'none'};
   const defs=Object.assign({},params);
   const pos=p2p(params.hAngle,params.vAngle,params.dist);
   const ang=THREE.MathUtils.degToRad(params.spread);
   const dir=LT.clone().sub(pos).normalize();
+  
   const sg=new THREE.Group();
   const pm=new THREE.MeshBasicMaterial({color:cfg.color,transparent:true,opacity:.81});
   sg.position.copy(pos);sg.lookAt(LT);scene.add(sg);
-  const lh=Math.max(.05,pos.y);const leg=new THREE.Group();
-  const legMat=new THREE.MeshStandardMaterial({color:0x111111,metalness:0.7,roughness:0.4});
-  const pole=new THREE.Mesh(new THREE.CylinderGeometry(.015,.03,lh,8),legMat);pole.position.set(0,lh/2,0);leg.add(pole);
-  const tMat=new THREE.MeshStandardMaterial({color:0x222222,metalness:0.8,roughness:0.5});
-  for(let i=0;i<3;i++){const tLeg=new THREE.Mesh(new THREE.CylinderGeometry(.015,.01,0.4,8),tMat);tLeg.rotation.x=Math.PI/2.5;tLeg.position.set(0,0.15,0.15);const pivot=new THREE.Group();pivot.rotation.y=(i*Math.PI*2)/3;pivot.add(tLeg);leg.add(pivot);}
+  
+  const leg=new THREE.Group(); // Bos ayak grubu (silme fonksiyonlarinda hata vermemesi icin gerekli)
   leg.position.set(pos.x,0,pos.z);scene.add(leg);
+  
   const spot=new THREE.SpotLight(cfg.color,cfg.defPow/100*cfg.maxI,22,ang,params.pen,params.decay);spot.position.copy(pos);
   const tgt=new THREE.Object3D();tgt.position.copy(LT);scene.add(tgt);spot.target=tgt;
   spot.castShadow=true;spot.shadow.mapSize.set(4096,4096);spot.shadow.bias=-0.0004;spot.shadow.normalBias=0.06;spot.shadow.radius=Math.max(5,params.blur);spot.shadow.camera.near=0.5;spot.shadow.camera.far=20;scene.add(spot);
+  
   const bl=pos.distanceTo(LT),br=Math.tan(ang)*bl;
   const coneGeo=new THREE.ConeGeometry(br,bl,28,1,true);coneGeo.translate(0,-bl/2,0);
   const coneMat=new THREE.MeshBasicMaterial({color:cfg.color,transparent:true,opacity:.05,side:THREE.DoubleSide,depthWrite:false,blending:THREE.AdditiveBlending});
   const cone=new THREE.Mesh(coneGeo,coneMat);cone.quaternion.copy(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,-1,0),dir));cone.position.copy(pos);scene.add(cone);
+  
   const diffMat=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:params.diffO,side:THREE.DoubleSide,depthWrite:false});
   const diffRingMat=new THREE.MeshBasicMaterial({color:0xaaaaaa,transparent:true,opacity:.6,side:THREE.DoubleSide});
   const diffGroup=new THREE.Group();diffGroup.add(new THREE.Mesh(new THREE.CircleGeometry(params.diffR,48),diffMat),new THREE.Mesh(new THREE.RingGeometry(params.diffR,params.diffR+.018,48),diffRingMat));
   const dpos=pos.clone().lerp(LT,params.diffD);diffGroup.position.copy(dpos);diffGroup.lookAt(pos);diffGroup.visible=params.diffOn&&!equipHidden;scene.add(diffGroup);
+  
   lightObjects[id]={spot,pm,cone,sg,leg,cfg,params,defs,curPow:cfg.defPow,diffGroup,diffMat,diffRingMat,areaSpots:[],right:new THREE.Vector3(),upDir:new THREE.Vector3()};
   updateLP(id);return id;
 }
 
-function updateLP(id){const o=lightObjects[id];const{params,sg,leg,spot,cone,diffGroup,diffMat,cfg}=o;const pos=p2p(params.hAngle,params.vAngle,params.dist);const ang=THREE.MathUtils.degToRad(params.spread);const dir=LT.clone().sub(pos).normalize();sg.position.copy(pos);sg.lookAt(LT);
+function updateLP(id){
+  const o=lightObjects[id];const{params,sg,leg,spot,cone,diffGroup,diffMat,cfg}=o;
+  const pos=p2p(params.hAngle,params.vAngle,params.dist);
+  const ang=THREE.MathUtils.degToRad(params.spread);
+  const dir=LT.clone().sub(pos).normalize();
+  
+  sg.position.copy(pos);sg.lookAt(LT);
   while(sg.children.length > 0){ let child = sg.children[0]; if(child.geometry) child.geometry.dispose(); sg.remove(child); }
-  const boxDepth=0.5;
-  const mountGeo=new THREE.CylinderGeometry(0.04,0.04,0.15,16);mountGeo.rotateX(Math.PI/2);mountGeo.translate(0,0,-boxDepth-0.075);
-  sg.add(new THREE.Mesh(mountGeo,new THREE.MeshStandardMaterial({color:0x333333,roughness:0.6,metalness:0.8})));
-  if (params.lType === 'rect') {
-    const backGeo=new THREE.CylinderGeometry(0.05,0.707,boxDepth,4);
-    backGeo.rotateX(Math.PI/2);backGeo.rotateZ(Math.PI/4);backGeo.translate(0,0,-boxDepth/2);backGeo.scale(cfg.ps[0],cfg.ps[1],1);
-    sg.add(new THREE.Mesh(backGeo,new THREE.MeshStandardMaterial({color:0x111111,roughness:0.9,metalness:0.2})));
-    sg.add(new THREE.Mesh(new THREE.PlaneGeometry(cfg.ps[0]*.96,cfg.ps[1]*.96),o.pm));
-    diffGroup.visible=params.diffOn&&!equipHidden&&o.spot.visible;
-  } else if (params.lType === 'ring') {
-    const ringGeo = new THREE.TorusGeometry(cfg.ps[0]/2, 0.1, 16, 48);
-    sg.add(new THREE.Mesh(ringGeo,new THREE.MeshStandardMaterial({color:0x111111,roughness:0.9,metalness:0.2})));
-    const lightRing = new THREE.Mesh(new THREE.TorusGeometry(cfg.ps[0]/2, 0.09, 16, 48), o.pm);
-    lightRing.position.z = 0.02;
-    sg.add(lightRing);
-    diffGroup.visible = false;
-  } else if (params.lType === 'octa') {
-    const octaGeo = new THREE.ConeGeometry(cfg.ps[0]/1.5, boxDepth, 8);
-    octaGeo.rotateX(-Math.PI/2); octaGeo.translate(0,0,-boxDepth/2);
-    sg.add(new THREE.Mesh(octaGeo,new THREE.MeshStandardMaterial({color:0x111111,roughness:0.9,metalness:0.2})));
-    sg.add(new THREE.Mesh(new THREE.CircleGeometry(cfg.ps[0]/1.55, 8), o.pm));
-    diffGroup.visible=params.diffOn&&!equipHidden&&o.spot.visible;
-  } else if (params.lType === 'hard') {
-    const hardGeo = new THREE.ConeGeometry(cfg.ps[0]/2.5, boxDepth/2, 16);
-    hardGeo.rotateX(-Math.PI/2); hardGeo.translate(0,0,-boxDepth/4);
-    sg.add(new THREE.Mesh(hardGeo,new THREE.MeshStandardMaterial({color:0x222222,roughness:0.3,metalness:0.9, side:THREE.DoubleSide})));
-    const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.08, 16, 16), o.pm);
-    bulb.position.z = 0.05;
-    sg.add(bulb);
-    diffGroup.visible = false;
+  
+  if (window.customLightObj) {
+      const clonedLight = window.customLightObj.clone(true); // deep clone
+      // Debug: modelin boyutlarını logla
+      const box = new THREE.Box3().setFromObject(clonedLight);
+      const size = box.getSize(new THREE.Vector3());
+      const center = box.getCenter(new THREE.Vector3());
+      console.log('OBJ Model boyut:', size, 'Merkez:', center);
+      
+      const maxDim = Math.max(size.x, size.y, size.z);
+      if(maxDim > 0) {
+          const targetSize = cfg.ps[0] * 1.5; // Hedef boyut
+          const scale = targetSize / maxDim;
+          clonedLight.scale.set(scale, scale, scale);
+          // Merkezi sıfırla (scale sonrası yeniden hesapla)
+          const newBox = new THREE.Box3().setFromObject(clonedLight);
+          const newCenter = newBox.getCenter(new THREE.Vector3());
+          clonedLight.position.set(-newCenter.x, -newCenter.y, -newCenter.z);
+          console.log('OBJ Scale:', scale, 'Hedef:', targetSize);
+      }
+      
+      clonedLight.traverse((child) => {
+          if (child.isMesh) {
+              child.material = o.pm; // Parlayan (emissive) materyal
+              child.castShadow = false;
+              child.receiveShadow = false;
+          }
+      });
+      sg.add(clonedLight);
+      console.log('OBJ ışık modeli sahneye eklendi, children:', clonedLight.children.length);
+  } else {
+      // Fallback: OBJ yüklenmediyse basit kare ışık göster
+      console.warn('customLightObj henüz yüklenmedi, fallback ışık kullanılıyor');
+      const fallbackGeo = new THREE.PlaneGeometry(cfg.ps[0] * 0.96, cfg.ps[1] * 0.96);
+      sg.add(new THREE.Mesh(fallbackGeo, o.pm));
   }
-  const lh=Math.max(.05,pos.y);if(leg.children[0].geometry) leg.children[0].geometry.dispose();leg.children[0].geometry=new THREE.CylinderGeometry(.015,.03,lh,8);leg.children[0].position.set(0,lh/2,0);leg.position.set(pos.x,0,pos.z);spot.position.copy(pos);
-  if (params.lType === 'hard') { spot.angle=Math.min(ang, THREE.MathUtils.degToRad(30)); spot.penumbra=0.05; } else { spot.angle=ang; spot.penumbra=params.pen; }
+  
+  diffGroup.visible=params.diffOn&&!equipHidden&&o.spot.visible;
+  leg.position.set(pos.x,0,pos.z);
+  
+  spot.position.copy(pos);
+  spot.angle=ang; spot.penumbra=params.pen;
   spot.decay=params.decay;spot.shadow.radius=Math.max(5,params.blur);spot.shadow.normalBias=0.06;
   spot.map = getGoboTexture(params.gobo);
-  cone.geometry.dispose();const bl=pos.distanceTo(LT),br=Math.tan(ang)*bl;const ng=new THREE.ConeGeometry(br,bl,28,1,true);ng.translate(0,-bl/2,0);cone.geometry=ng;cone.quaternion.copy(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,-1,0),dir));cone.position.copy(pos);const dpos=pos.clone().lerp(LT,params.diffD);diffGroup.position.copy(dpos);diffGroup.lookAt(pos);diffGroup.children[0].geometry.dispose();diffGroup.children[0].geometry=new THREE.CircleGeometry(params.diffR,48);diffGroup.children[1].geometry.dispose();diffGroup.children[1].geometry=new THREE.RingGeometry(params.diffR,params.diffR+.018,48);diffMat.opacity=params.diffO;_updateAreaSpots(id);}
+  
+  cone.geometry.dispose();const bl=pos.distanceTo(LT),br=Math.tan(ang)*bl;const ng=new THREE.ConeGeometry(br,bl,28,1,true);ng.translate(0,-bl/2,0);cone.geometry=ng;cone.quaternion.copy(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,-1,0),dir));cone.position.copy(pos);
+  const dpos=pos.clone().lerp(LT,params.diffD);diffGroup.position.copy(dpos);diffGroup.lookAt(pos);
+  diffGroup.children[0].geometry.dispose();diffGroup.children[0].geometry=new THREE.CircleGeometry(params.diffR,48);
+  diffGroup.children[1].geometry.dispose();diffGroup.children[1].geometry=new THREE.RingGeometry(params.diffR,params.diffR+.018,48);
+  diffMat.opacity=params.diffO;
+  
+  _updateAreaSpots(id);
+}
 
-function syncLDP(){if(!activeId||!lightObjects[activeId])return;const o=lightObjects[activeId];const{params,cfg}=o;document.getElementById('cHA').value=params.hAngle;document.getElementById('vHA').textContent=params.hAngle+'°';document.getElementById('cVA').value=params.vAngle;document.getElementById('vVA').textContent=params.vAngle+'°';document.getElementById('cDist').value=params.dist;document.getElementById('vDist').textContent=params.dist.toFixed(1)+'m';document.getElementById('cSpread').value=params.spread;document.getElementById('vSpread').textContent=params.spread+'°';document.getElementById('cPen').value=params.pen;document.getElementById('vPen').textContent=params.pen.toFixed(2);document.getElementById('cBlur').value=params.blur;document.getElementById('vBlur').textContent=params.blur.toFixed(1);document.getElementById('cDecay').value=params.decay;document.getElementById('vDecay').textContent=params.decay.toFixed(1);document.getElementById('cDiffOn').checked=params.diffOn;document.getElementById('diffControls').classList.toggle('disabled',!params.diffOn);document.getElementById('cDiffR').value=params.diffR;document.getElementById('vDiffR').textContent=params.diffR.toFixed(2)+'m';document.getElementById('cDiffD').value=params.diffD;document.getElementById('vDiffD').textContent=Math.round(params.diffD*100)+'%';document.getElementById('cDiffO').value=params.diffO;document.getElementById('vDiffO').textContent=params.diffO.toFixed(2);document.getElementById('cLightType').value=params.lType;document.getElementById('cGobo').value=params.gobo;const hx='#'+cfg.color.getHexString();document.getElementById('ldpDot').style.cssText='background:'+hx+';color:'+hx;document.getElementById('ldpName').textContent=cfg.label;}
+function syncLDP(){if(!activeId||!lightObjects[activeId])return;const o=lightObjects[activeId];const{params,cfg}=o;document.getElementById('cHA').value=params.hAngle;document.getElementById('vHA').textContent=params.hAngle+'°';document.getElementById('cVA').value=params.vAngle;document.getElementById('vVA').textContent=params.vAngle+'°';document.getElementById('cDist').value=params.dist;document.getElementById('vDist').textContent=params.dist.toFixed(1)+'m';document.getElementById('cSpread').value=params.spread;document.getElementById('vSpread').textContent=params.spread+'°';document.getElementById('cPen').value=params.pen;document.getElementById('vPen').textContent=params.pen.toFixed(2);document.getElementById('cBlur').value=params.blur;document.getElementById('vBlur').textContent=params.blur.toFixed(1);document.getElementById('cDecay').value=params.decay;document.getElementById('vDecay').textContent=params.decay.toFixed(1);document.getElementById('cDiffOn').checked=params.diffOn;document.getElementById('diffControls').classList.toggle('disabled',!params.diffOn);document.getElementById('cDiffR').value=params.diffR;document.getElementById('vDiffR').textContent=params.diffR.toFixed(2)+'m';document.getElementById('cDiffD').value=params.diffD;document.getElementById('vDiffD').textContent=Math.round(params.diffD*100)+'%';document.getElementById('cDiffO').value=params.diffO;document.getElementById('vDiffO').textContent=params.diffO.toFixed(2);document.getElementById('cGobo').value=params.gobo;const hx='#'+cfg.color.getHexString();document.getElementById('ldpDot').style.cssText='background:'+hx+';color:'+hx;document.getElementById('ldpName').textContent=cfg.label;}
 function openLDP(id){activeId=id;ldp.classList.add('visible');syncLDP();document.querySelectorAll('.light-card').forEach(c=>c.classList.toggle('active',c.dataset.id===id));}
 function closeLDP(){activeId=null;ldp.classList.remove('visible');document.querySelectorAll('.light-card').forEach(c=>c.classList.remove('active'));}
 document.getElementById('ldpClose').addEventListener('click',closeLDP);
 [['cHA','vHA','hAngle','°'],['cVA','vVA','vAngle','°'],['cDist','vDist','dist','m'],['cSpread','vSpread','spread','°'],['cPen','vPen','pen',''],['cBlur','vBlur','blur',''],['cDecay','vDecay','decay','']].forEach(([ci,vi,pk,u])=>{document.getElementById(ci).addEventListener('input',()=>{if(!activeId||!lightObjects[activeId])return;const v=+document.getElementById(ci).value;lightObjects[activeId].params[pk]=v;document.getElementById(vi).textContent=u==='m'?v.toFixed(1)+'m':u==='°'?v+'°':v.toFixed(2);updateLP(activeId);});});
-if (document.getElementById('cLightType')) {
-  document.getElementById('cLightType').addEventListener('change', e=>{
-    if(!activeId||!lightObjects[activeId])return;
-    lightObjects[activeId].params.lType = e.target.value;
-    updateLP(activeId);
-  });
-}
+
 if (document.getElementById('cGobo')) {
   document.getElementById('cGobo').addEventListener('change', e=>{
     if(!activeId||!lightObjects[activeId])return;
