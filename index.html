@@ -621,9 +621,10 @@ body.ar-mode #toast {
 <!-- Sol Panel -->
 <div id="productPanel">
   <div class="pp-header" id="ppHeader"><span class="pp-title-text">📦 Ürün & Sahne</span><span class="pp-toggle" id="ppToggle">‹</span></div>
-  <div class="pp-tabs">
+  <div class="pp-tabs" style="flex-wrap: wrap;">
     <button class="pp-tab active" data-tab="product">📦 Ürün</button>
     <button class="pp-tab" data-tab="scene">🌍 Sahne</button>
+    <button class="pp-tab" data-tab="ai">🤖 Y. Zeka</button>
     <button class="pp-tab" data-tab="post">🎨 Post</button>
   </div>
   <div class="pp-body">
@@ -1113,6 +1114,29 @@ body.ar-mode #toast {
         <button class="sp-btn" data-preset="luxury"><span class="sp-icon">🖤</span>Luxury Dark</button>
         <button class="sp-btn" data-preset="nature"><span class="sp-icon">🌿</span>Doğal</button>
       </div>
+    </div>
+
+    <!-- TAB: YAPAY ZEKA -->
+    <div class="pp-pane" id="pane-ai">
+       <div class="pp-section">AI Arka Plan Üretici</div>
+       <div style="font-size:10px;color:var(--text-dim);margin-bottom:10px;">Hazır bir stil seçin veya kendi ortamınızı yazın.</div>
+       
+       <div style="display:flex; gap:4px; margin-bottom:8px; flex-wrap:wrap;">
+         <button class="scene-btn ai-preset-btn" data-prompt="A luxury marble podium in a bright high-end photography studio, professional lighting, 8k" style="flex:1; font-size:10px; padding:4px;">🏢 Stüdyo</button>
+         <button class="scene-btn ai-preset-btn" data-prompt="A macro shot of a product on a mossy rock in a dense green magical forest, sunlight rays, cinematic, 8k" style="flex:1; font-size:10px; padding:4px;">🌿 Doğa</button>
+         <button class="scene-btn ai-preset-btn" data-prompt="A cinematic cyberpunk neon street at night, glowing neon signs, wet reflections, 8k" style="flex:1; font-size:10px; padding:4px;">🌃 Neon</button>
+       </div>
+
+       <textarea id="aiPrompt" style="width:100%;height:60px;background:rgba(255,255,255,0.05);border:1px solid var(--panel-border);color:#fff;border-radius:6px;padding:6px;margin-bottom:8px;font-family:inherit;font-size:11px;" placeholder="Örn: A cinematic cyberpunk neon street at night"></textarea>
+       
+       <div class="post-toggle-row" style="margin-bottom:10px; background:rgba(0,0,0,0.2); padding:6px; border-radius:4px;">
+         <span class="post-toggle-label" style="font-size:10px;">360° Gerdirme (Dome)</span>
+         <label class="mini-switch"><input type="checkbox" id="aiStretchToggle"><span class="mini-sl"></span></label>
+       </div>
+
+       <button class="scene-btn" id="btnGenerateAI" style="width:100%;margin-bottom:8px;background:rgba(212,145,47,.15);border-color:#d4912f;color:var(--amber);">✨ Yapay Zeka ile Oluştur</button>
+       <div id="aiProgress" style="font-size:10px;color:var(--amber);text-align:center;display:none;margin-bottom:8px;padding:4px;border:1px dashed var(--amber);border-radius:4px;"></div>
+       <button class="scene-btn" id="btnRemoveAI" style="width:100%;margin-bottom:8px;display:none;border-color:#c04040;color:#c04040;">Arka Planı Kaldır</button>
     </div>
 
     <!-- TAB: POST -->
@@ -5900,6 +5924,101 @@ document.addEventListener('keydown', e => {
 
 })();
 // ═══════════════════════════════════════════════════════════
+
+// --- REVOLUTION UPDATE LOGIC ---
+
+// 1. YAPAY ZEKA ARKA PLAN
+let aiDome = null;
+const btnGenerateAI = document.getElementById('btnGenerateAI');
+const aiProgress = document.getElementById('aiProgress');
+
+document.querySelectorAll('.ai-preset-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.getElementById('aiPrompt').value = btn.dataset.prompt;
+    if(btnGenerateAI) btnGenerateAI.click();
+  });
+});
+
+if(btnGenerateAI) {
+  btnGenerateAI.addEventListener('click', async () => {
+    const prompt = document.getElementById('aiPrompt').value || 'A cinematic cyberpunk neon street at night';
+    // Use 4K resolution (4096x2048) for much higher quality
+    const url = 'https://image.pollinations.ai/prompt/' + encodeURIComponent(prompt + ' 8k resolution photorealistic 3d render equirectangular hdri panorama') + '?width=4096&height=2048&nologo=true';
+    
+    if(aiProgress) {
+        aiProgress.style.display = 'block';
+        aiProgress.innerText = 'Yapay zeka 4K çözünürlükte arka plan çiziyor...\n(Lütfen 5-15 saniye bekleyin)';
+    }
+    if(typeof toast === 'function') toast('Yapay Zeka üretimi başladı...');
+    
+    const loader = new THREE.TextureLoader();
+    loader.setCrossOrigin('anonymous');
+    loader.load(
+      url, 
+      tex => {
+        tex.encoding = THREE.sRGBEncoding;
+        
+        if (aiDome) { scene.remove(aiDome); aiDome.geometry.dispose(); aiDome.material.dispose(); aiDome = null; }
+        
+        const isStretch = document.getElementById('aiStretchToggle') && document.getElementById('aiStretchToggle').checked;
+        
+        if (isStretch) {
+          // Sphere Dome
+          const geo = new THREE.SphereGeometry(500, 64, 64);
+          const mat = new THREE.MeshBasicMaterial({side: THREE.BackSide, color: 0xffffff, map: tex, fog: false});
+          aiDome = new THREE.Mesh(geo, mat);
+          tex.wrapS = THREE.RepeatWrapping;
+          tex.repeat.x = -1; // Fix mirroring
+        } else {
+          // Flat Cinema Screen (Crisp quality)
+          const geo = new THREE.PlaneGeometry(800, 400); 
+          const mat = new THREE.MeshBasicMaterial({side: THREE.DoubleSide, color: 0xffffff, map: tex, fog: false});
+          aiDome = new THREE.Mesh(geo, mat);
+          aiDome.position.set(0, 50, -300); // Put it 300 meters behind the product
+        }
+        
+        scene.add(aiDome);
+        
+        camera.far = 2000;
+        camera.updateProjectionMatrix();
+        
+        if(typeof getPMREM === 'function') {
+          try {
+            scene.environment = getPMREM().fromEquirectangular(tex).texture;
+          } catch(e) { console.error('PMREM error:', e); }
+        }
+        
+        if(aiProgress) aiProgress.style.display = 'none';
+        document.getElementById('btnRemoveAI').style.display = 'block';
+        
+        // Hide existing physical backgrounds to reveal the AI backdrop
+        if(typeof bw !== 'undefined' && bw) bw.visible = false;
+        if(typeof sweepMesh !== 'undefined' && sweepMesh) sweepMesh.visible = false;
+        if(typeof bgPlane !== 'undefined' && bgPlane) bgPlane.visible = false;
+        
+        if(typeof toast === 'function') toast('Yapay Zeka arka planı başarıyla uygulandı!');
+      },
+      undefined,
+      err => {
+        if(aiProgress) aiProgress.innerText = 'Üretim sırasında hata oluştu!';
+      }
+    );
+  });
+}
+
+const btnRemoveAI = document.getElementById('btnRemoveAI');
+if(btnRemoveAI) {
+  btnRemoveAI.addEventListener('click', () => {
+    if(aiDome) { scene.remove(aiDome); aiDome.geometry.dispose(); aiDome.material.dispose(); aiDome = null; }
+    scene.environment = null;
+    btnRemoveAI.style.display = 'none';
+    
+    // Restore physical backgrounds if needed
+    if(typeof bw !== 'undefined' && bw && document.getElementById('envModeSel') && document.getElementById('envModeSel').value === 'studio') bw.visible = true;
+    if(typeof sweepMesh !== 'undefined' && sweepMesh && document.getElementById('envModeSel') && document.getElementById('envModeSel').value === 'sweep') sweepMesh.visible = true;
+  });
+}
+
 })();
 </script>
 
