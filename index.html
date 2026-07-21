@@ -20,7 +20,17 @@ window.addEventListener('unhandledrejection', function(e) {
   if(typeof toast === 'function') toast('Promise Hatası: ' + (e.reason&&e.reason.message?e.reason.message:e.reason));
 });
 </script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.164.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.164.0/examples/jsm/",
+    "three/examples/jsm/": "https://cdn.jsdelivr.net/npm/three@0.164.0/examples/jsm/",
+    "three-mesh-bvh": "https://cdn.jsdelivr.net/npm/three-mesh-bvh@0.7.3/build/index.module.js",
+    "three-gpu-pathtracer": "https://cdn.jsdelivr.net/npm/three-gpu-pathtracer@0.0.24/build/index.module.js"
+  }
+}
+</script>
 <style>
 :root{--bg:#121113;--panel:#1c1a1d;--panel-border:#2c292c;--amber:#d4912f;--amber-soft:#caa15c;--text:#f1ece2;--text-dim:#9a948c;--radius:14px;}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
@@ -541,20 +551,6 @@ body.ar-mode #toast {
     display: none !important;
 }
 </style>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/Pass.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/BokehShader.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/BokehPass.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/math/SimplexNoise.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/SSAOShader.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/SSAOPass.js"></script>
-
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/exporters/GLTFExporter.js"></script>
 </head>
 <body>
 <canvas id="scene"></canvas>
@@ -596,6 +592,7 @@ body.ar-mode #toast {
 
 <div class="header">
   <h1 id="titleEl" style="font-size:22px; margin:0; font-weight:700; letter-spacing:0.5px;">Studio Pro V11</h1>
+  <button id="pathTracerToggle" style="margin-left:20px; padding:6px 12px; background:rgba(212,145,47,0.2); border:1px solid #d4912f; color:#d4912f; border-radius:6px; cursor:pointer; font-weight:bold; font-size:11px;">✨ Işın İzleme (KAPALI)</button>
 </div>
 
 <!-- Top Toolbar -->
@@ -687,6 +684,9 @@ body.ar-mode #toast {
             <div class="fine-row"><div class="fine-label"><span>Metalik</span><span class="fine-val" id="vMdMetalness">0.00</span></div><input type="range" id="ctrlMdMetalness" min="0" max="1" step="0.01" value="0"></div>
             <div class="fine-row"><div class="fine-label"><span>Clearcoat</span><span class="fine-val" id="vMdClearcoat">0.00</span></div><input type="range" id="ctrlMdClearcoat" min="0" max="1" step="0.01" value="0"></div>
             <div class="fine-row"><div class="fine-label"><span>Şeffaflık</span><span class="fine-val" id="vMdOpacity">1.00</span></div><input type="range" id="ctrlMdOpacity" min="0.05" max="1" step="0.01" value="1"></div>
+            <div class="fine-row"><div class="fine-label"><span>Cam Geçirgenliği</span><span class="fine-val" id="vMdTransmission">0.00</span></div><input type="range" id="ctrlMdTransmission" min="0" max="1" step="0.01" value="0"></div>
+            <div class="fine-row"><div class="fine-label"><span>Kırılma (IOR)</span><span class="fine-val" id="vMdIor">1.50</span></div><input type="range" id="ctrlMdIor" min="1" max="2.33" step="0.01" value="1.5"></div>
+            <div class="fine-row"><div class="fine-label"><span>Renk Ayrışması</span><span class="fine-val" id="vMdDispersion">0.00</span></div><input type="range" id="ctrlMdDispersion" min="0" max="5" step="0.1" value="0"></div>
             <div class="md-section">🔧 Dönüşüm (Transform)</div>
             <div class="fine-row"><div class="fine-label"><span>Konum X</span><span class="fine-val" id="vMdPosX">0.00</span></div><input type="range" id="ctrlMdPosX" min="-5" max="5" step="0.01" value="0"></div>
             <div class="fine-row"><div class="fine-label"><span>Konum Y</span><span class="fine-val" id="vMdPosY">0.00</span></div><input type="range" id="ctrlMdPosY" min="-5" max="5" step="0.01" value="0"></div>
@@ -1139,23 +1139,30 @@ body.ar-mode #toast {
        <button class="scene-btn" id="btnRemoveAI" style="width:100%;margin-bottom:8px;display:none;border-color:#c04040;color:#c04040;">Arka Planı Kaldır</button>
 
        <hr style="border:0;border-top:1px solid rgba(255,255,255,0.1);margin:15px 0;">
-
-       <!-- 2D to 3D Modülü -->
        <div class="pp-section">🖼️ 2D'den 3D'ye Çevir</div>
-       <div style="font-size:10px;color:var(--text-dim);margin-bottom:10px;">Şeffaf arka planlı (PNG) bir ürün resmi yükleyin, yapay zeka onu anında 3D modele dönüştürüp sahneye eklesin.</div>
-       
+
+       <!-- Yöntem 1: Otomatik -->
+       <div style="font-size:11px;font-weight:bold;margin-bottom:4px;color:var(--text-bright);">Yöntem 1: Otomatik API Bağlantısı</div>
+       <div style="font-size:9px;color:#f39c12;margin-bottom:8px;">(Sadece web sunucusunda çalışır, yerel dosyalarda engellenir)</div>
        <input type="file" id="ai3dFileInput" accept="image/png, image/jpeg, image/webp" style="display:none">
-       <button class="scene-btn" id="btnSelectAI3D" style="width:100%;margin-bottom:8px;background:rgba(255,255,255,.05);border-style:dashed;">📁 Resim Seç (PNG/JPG)</button>
-       
+       <button class="scene-btn" id="btnSelectAI3D" style="width:100%;margin-bottom:8px;background:rgba(255,255,255,.05);border-style:dashed;">📁 1. Resim Seç (PNG/JPG)</button>
        <div id="ai3dPreviewContainer" style="display:none; text-align:center; margin-bottom:8px;">
           <img id="ai3dPreviewImg" style="max-width:100%; max-height:100px; border-radius:4px; border:1px solid var(--panel-border);">
        </div>
+       <button class="scene-btn" id="btnGenerateAI3D" style="width:100%;margin-bottom:12px;background:rgba(47, 212, 145, 0.15);border-color:#2fd491;color:#2fd491;display:none;">🚀 2. Otomatik 3D'ye Dönüştür</button>
 
-       <button class="scene-btn" id="btnGenerateAI3D" style="width:100%;margin-bottom:8px;background:rgba(47, 212, 145, 0.15);border-color:#2fd491;color:#2fd491;display:none;">🚀 3D'ye Dönüştür</button>
-       
+       <div style="border-top:1px dashed rgba(255,255,255,0.2);margin:12px 0;"></div>
+
+       <!-- Yöntem 2: Manuel -->
+       <div style="font-size:11px;font-weight:bold;margin-bottom:4px;color:var(--text-bright);">Yöntem 2: Manuel Yükleme</div>
+       <div style="font-size:9px;color:var(--text-dim);margin-bottom:8px;">Hunyuan3D'yi açıp kendiniz oluşturun, sonra GLB'yi ekleyin. (Her zaman çalışır)</div>
+       <button class="scene-btn" id="btnOpen3DSite" style="width:100%;margin-bottom:6px;background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.2);">🌐 1. Hunyuan3D Sitesini Aç</button>
+       <input type="file" id="ai3dGlbInput" accept=".glb,.obj" style="display:none">
+       <button class="scene-btn" id="btnLoadGlb" style="width:100%;margin-bottom:6px;background:rgba(255,255,255,.05);border-style:dashed;">📂 2. Hazır GLB'yi Sahneye Ekle</button>
+
+       <!-- Ortak Yükleme Ekranı -->
        <div id="ai3dProgress" style="font-size:10px;color:#2fd491;text-align:center;display:none;margin-bottom:8px;padding:8px;border:1px dashed #2fd491;border-radius:4px;background:rgba(47,212,145,0.05);">
-         <div id="ai3dStatusText" style="margin-bottom:4px;font-weight:bold;font-size:11px;">Kuyruğa giriliyor...</div>
-         <div id="ai3dStatusDetail" style="opacity:0.8;">Lütfen bekleyin</div>
+         <div id="ai3dStatusText" style="margin-bottom:4px;font-weight:bold;font-size:11px;">Yükleniyor...</div>
          <div style="width:100%; height:4px; background:rgba(255,255,255,0.1); border-radius:2px; margin-top:6px; overflow:hidden;">
             <div id="ai3dProgressBar" style="width:0%; height:100%; background:#2fd491; transition:width 0.3s ease;"></div>
          </div>
@@ -1174,6 +1181,9 @@ body.ar-mode #toast {
         <button class="lens-btn" data-mm="135">135mm<br><span style="font-size:8px;opacity:.6">Telefoto</span></button>
       </div>
       <div class="post-row"><div class="post-lbl"><span>F-Stop (Diyafram)</span><span class="post-val" id="vFstop">f/5.6</span></div><input type="range" id="ctrlFstop" min="1" max="7" step="0.5" value="5.6"></div>
+
+      <div class="scene-section">Işın İzleme (Path Tracing)</div>
+      <div class="post-row"><div class="post-lbl"><span>Işın Sekmesi (Bounces)</span><span class="post-val" id="vPTBounces">3</span></div><input type="range" id="ctrlPTBounces" min="1" max="10" step="1" value="3"></div>
 
       <div class="scene-section">SSAO (Derinlik Gölgeleri)</div>
       <div class="post-toggle-row"><span class="post-toggle-label">SSAO Aktif</span><label class="mini-switch"><input type="checkbox" id="ssaoToggle"><span class="mini-sl"></span></label></div>
@@ -1338,6 +1348,7 @@ body.ar-mode #toast {
   <div class="sheet-pane" id="spane-camera">
     <div class="cam-grid">
       <div class="cam-row"><div class="cam-lbl"><span>🔭 FOV</span><span class="cam-val" id="vFov">40°</span></div><input type="range" id="ctrlFov" min="20" max="80" step="1" value="40"></div>
+      <div class="cam-row"><div class="cam-lbl"><span>☀️ Pozlama</span><span class="cam-val" id="vExp">1.00</span></div><input type="range" id="ctrlExp" min="0.1" max="5.0" step="0.05" value="1.0"></div>
     </div>
     <div class="cam-section" style="margin-top:4px;">Aspect Ratio (Export)</div>
     <div class="ar-row">
@@ -1453,9 +1464,34 @@ body.ar-mode #toast {
   <button id="doTransPngBtn" style="width:100%;padding:7px;background:rgba(120,200,255,.2);border:1px solid rgba(120,200,255,.4);border-radius:7px;color:#a8d8ff;font-size:10px;font-weight:600;cursor:pointer;">⬇ İndir</button>
 </div>
 
-<script>
+<script type="module">
+import * as _THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
+import { WebGLPathTracer } from 'three-gpu-pathtracer';
+import { MeshBVH, acceleratedRaycast, computeBoundsTree, disposeBoundsTree } from 'three-mesh-bvh';
+import { EXRLoader } from 'three/addons/loaders/EXRLoader.js';
 
+const THREE = { ..._THREE };
+window.THREE = THREE;
 
+THREE.MeshBVH = MeshBVH;
+THREE.acceleratedRaycast = acceleratedRaycast;
+THREE.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree;
+THREE.BufferGeometry.prototype.disposeBoundsTree = disposeBoundsTree;
+THREE.GLTFLoader = GLTFLoader;
+THREE.RGBELoader = RGBELoader;
+THREE.EXRLoader = EXRLoader;
+THREE.GLTFExporter = GLTFExporter;
+
+// Aliases for backward compatibility with r128 code
+THREE.sRGBEncoding = THREE.SRGBColorSpace || 3001;
+THREE.LinearEncoding = THREE.LinearSRGBColorSpace || 3000;
+
+// Path Tracer Globals
+window.pathTracer = null;
+window.isPathTracing = false;
 
 (function(){
 'use strict';
@@ -1468,18 +1504,45 @@ const canvas=document.getElementById('scene');
 const renderer=new THREE.WebGLRenderer({canvas,antialias:true,preserveDrawingBuffer:true});
 renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
 renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
-renderer.outputEncoding=THREE.sRGBEncoding;
+renderer.outputColorSpace=THREE.SRGBColorSpace;
 renderer.toneMapping=THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure=1.1;
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x121113);
 const camera=new THREE.PerspectiveCamera(40,innerWidth/innerHeight,.1,100);
+
+// Initialize Path Tracer
+window.pathTracer = new WebGLPathTracer(renderer);
+window.pathTracer.multipleImportanceSampling = true;
+window.pathTracer.tiles.set(3, 3);
+window.pathTracer.setScene(scene, camera);
+
+const pathTracerToggleBtn = document.getElementById('pathTracerToggle');
+if(pathTracerToggleBtn) {
+  pathTracerToggleBtn.addEventListener('click', () => {
+    window.isPathTracing = !window.isPathTracing;
+    if(window.isPathTracing) {
+      pathTracerToggleBtn.innerHTML = '✨ Işın İzleme (AÇIK)';
+      pathTracerToggleBtn.style.background = 'rgba(47,212,145,0.2)';
+      pathTracerToggleBtn.style.borderColor = '#2fd491';
+      pathTracerToggleBtn.style.color = '#2fd491';
+      if(window.pathTracer.updateScene) window.pathTracer.updateScene(); else window.pathTracer.setScene(scene, camera);
+      window.pathTracer.updateCamera();
+    } else {
+      pathTracerToggleBtn.innerHTML = '✨ Işın İzleme (KAPALI)';
+      pathTracerToggleBtn.style.background = 'rgba(212,145,47,0.2)';
+      pathTracerToggleBtn.style.borderColor = '#d4912f';
+      pathTracerToggleBtn.style.color = '#d4912f';
+    }
+  });
+}
+
 function resize(){if(window.isRecording)return;renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();updateARFrame();}
 window.addEventListener('resize',resize);
 
 /* ═══ ORBIT ═══ */
 const CT=new THREE.Vector3(0,1.25,0);
 let camR=8.2,camTh=Math.PI/4,camPh=Math.PI/2.6;
-function updateCam(){camera.position.set(CT.x+camR*Math.sin(camPh)*Math.sin(camTh),CT.y+camR*Math.cos(camPh),CT.z+camR*Math.sin(camPh)*Math.cos(camTh));camera.lookAt(CT);}
+function updateCam(){camera.position.set(CT.x+camR*Math.sin(camPh)*Math.sin(camTh),CT.y+camR*Math.cos(camPh),CT.z+camR*Math.sin(camPh)*Math.cos(camTh));camera.lookAt(CT); if(window.pathTracer) window.pathTracer.updateCamera();}
 const ptrs=new Map();let turntableActive=false;
 let isSpaceDown = false;
 window.addEventListener('keydown', e => { if(e.code === 'Space' && e.target.tagName !== 'INPUT') { isSpaceDown = true; e.preventDefault(); } });
@@ -1614,8 +1677,7 @@ setTimeout(() => {
 }, 250);
 
 /* ═══ HDRI/IBL ═══ */
-let pmremGen=null,envMapCache={},rgbeLoaded=false;
-function getPMREM(){if(!pmremGen){pmremGen=new THREE.PMREMGenerator(renderer);pmremGen.compileEquirectangularShader();}return pmremGen;}
+let envMapCache={},rgbeLoaded=false;
 const HDRI_CONFIGS={
   neutral:{sky:[0.28,0.28,0.32],horizon:[0.18,0.18,0.20],ground:[0.05,0.04,0.06]},
   studio:{sky:[0.35,0.35,0.40],horizon:[0.28,0.28,0.32],ground:[0.09,0.08,0.10]},
@@ -1636,16 +1698,16 @@ function buildEnvTexture(cfg){
   }
   const tex=new THREE.DataTexture(data,W,H,THREE.RGBAFormat,THREE.FloatType);
   tex.mapping=THREE.EquirectangularReflectionMapping;tex.needsUpdate=true;
-  return getPMREM().fromEquirectangular(tex).texture;
+  return tex;
 }
 function applyHDRI(key){
   const cfg=HDRI_CONFIGS[key];if(!cfg)return;
   if(!envMapCache[key])envMapCache[key]=buildEnvTexture(cfg);
   const intensity=+document.getElementById('ctrlHdriInt').value;
-  scene.environment=envMapCache[key];
-  renderer.toneMappingExposure=intensity;
+  scene.environment=envMapCache[key]; if(window.pathTracer) window.pathTracer.updateEnvironment();
+  if('environmentIntensity' in scene) { scene.environmentIntensity=intensity; scene.backgroundIntensity=intensity; } else { renderer.toneMappingExposure=intensity; }
 }
-function removeHDRI(){scene.environment=null;renderer.toneMappingExposure=1;}
+function removeHDRI(){scene.environment=null; if('environmentIntensity' in scene) { scene.environmentIntensity=1; scene.backgroundIntensity=1; } if(window.pathTracer) window.pathTracer.updateEnvironment();}
 document.getElementById('hdriToggle').addEventListener('change',e=>{
   const c=document.getElementById('hdriControls');c.style.opacity=e.target.checked?'1':'.3';c.style.pointerEvents=e.target.checked?'auto':'none';
   if(e.target.checked)applyHDRI(document.querySelector('.hdri-btn.active')?.dataset.hdri||'neutral');else removeHDRI();
@@ -1654,7 +1716,7 @@ document.querySelectorAll('.hdri-btn').forEach(b=>b.addEventListener('click',()=
   document.querySelectorAll('.hdri-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');
   if(document.getElementById('hdriToggle').checked)applyHDRI(b.dataset.hdri);
 }));
-document.getElementById('ctrlHdriInt').addEventListener('input',e=>{document.getElementById('vHdriInt').textContent=parseFloat(e.target.value).toFixed(2);if(document.getElementById('hdriToggle').checked)renderer.toneMappingExposure=+e.target.value;});
+document.getElementById('ctrlHdriInt').addEventListener('input',e=>{document.getElementById('vHdriInt').textContent=parseFloat(e.target.value).toFixed(2);if(document.getElementById('hdriToggle').checked) { if('environmentIntensity' in scene) { scene.environmentIntensity=+e.target.value; scene.backgroundIntensity=+e.target.value; } else { renderer.toneMappingExposure=+e.target.value; } if(window.pathTracer) window.pathTracer.updateEnvironment(); }});
 document.getElementById('hdriBgToggle').addEventListener('change',e=>{
   if(e.target.checked&&window.currentHdriTexture){
     scene.background=window.currentHdriTexture;
@@ -1689,67 +1751,41 @@ if(bgTexSel) {
 document.getElementById('hdriFileBtn').addEventListener('click',()=>document.getElementById('hdriFileInput').click());
 document.getElementById('hdriFileInput').addEventListener('change',e=>{
   const f=e.target.files[0];if(!f)return;
-  const doLoad=(LoaderClass)=>{
-    const loader=new THREE[LoaderClass]();
-    const url=URL.createObjectURL(f);
-    document.getElementById('loadingText').textContent='HDRI yükleniyor…';
-    document.getElementById('loadingOverlay').classList.add('visible');
-    loader.load(url,tex=>{
-      setTimeout(()=>URL.revokeObjectURL(url),5000);
-      tex.mapping=THREE.EquirectangularReflectionMapping;
-      const envMap=getPMREM().fromEquirectangular(tex).texture;
-      if(window.currentHdriTexture)window.currentHdriTexture.dispose();
-      window.currentHdriTexture=tex;
-      scene.environment=envMap;
-      
-      document.getElementById('hdriBgToggleRow').style.display='flex';
-      if(document.getElementById('hdriBgToggle').checked){
-         scene.background=window.currentHdriTexture;
-         bw.visible=false;if(typeof sweepMesh!=='undefined'&&sweepMesh)sweepMesh.visible=false;
-      }
-      
-      renderer.toneMappingExposure=+document.getElementById('ctrlHdriInt').value;
-      document.getElementById('loadingOverlay').classList.remove('visible');
-      toast('HDRI yüklendi ✓');
-    },null,err=>{
-      setTimeout(()=>URL.revokeObjectURL(url),5000);
-      document.getElementById('loadingOverlay').classList.remove('visible');
-      toast('HDR hatası — dosya bozuk veya desteklenmiyor');
-    });
-  };
   const ext=f.name.toLowerCase().split('.').pop();
   if(ext!=='hdr'&&ext!=='exr'){
     toast('Hata: Yalnızca .hdr veya .exr formatları desteklenir!');
+    e.target.value='';
     return;
   }
   const isEXR=ext==='exr';
-  const loaderName=isEXR?'exr':'rgbe';
   const LoaderClass=isEXR?'EXRLoader':'RGBELoader';
   
-  const ensureFflate=(cb)=>{
-    if(!isEXR||window.fflate){cb();return;}
-    const s=document.createElement('script');
-    s.src='https://unpkg.com/fflate@0.6.9/umd/index.js';
-    s.onload=cb;s.onerror=()=>toast('fflate yüklenemedi!');
-    document.head.appendChild(s);
-  };
+  const loader=new window.THREE[LoaderClass]();
+  const url=URL.createObjectURL(f);
+  document.getElementById('loadingText').textContent='HDRI yükleniyor…';
+  document.getElementById('loadingOverlay').classList.add('visible');
   
-  if(window[loaderName+'Loaded']){ensureFflate(()=>doLoad(LoaderClass));e.target.value='';return;}
-  let s=document.querySelector(`script[data-loader="${loaderName}"]`);
-  if(!s){
-    s=document.createElement('script');
-    s.setAttribute('data-loader',loaderName);
-    s.src=`https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/${LoaderClass}.js`;
-    s.onload=()=>{window[loaderName+'Loaded']=true;ensureFflate(()=>doLoad(LoaderClass));};
-    s.onerror=()=>{
-      const s2=document.createElement('script');
-      s2.src=`https://unpkg.com/three@0.128.0/examples/js/loaders/${LoaderClass}.js`;
-      s2.onload=()=>{window[loaderName+'Loaded']=true;ensureFflate(()=>doLoad(LoaderClass));};
-      s2.onerror=()=>{document.getElementById('loadingOverlay').classList.remove('visible');toast(LoaderClass+' yüklenemedi!');};
-      document.head.appendChild(s2);
-    };
-    document.head.appendChild(s);
-  } else if(window[loaderName+'Loaded']){ensureFflate(()=>doLoad(LoaderClass));}
+  loader.load(url,tex=>{
+    setTimeout(()=>URL.revokeObjectURL(url),5000);
+    tex.mapping=window.THREE.EquirectangularReflectionMapping;
+    if(window.currentHdriTexture)window.currentHdriTexture.dispose();
+    window.currentHdriTexture=tex;
+    scene.environment=tex; if(window.pathTracer) window.pathTracer.updateEnvironment();
+    
+    document.getElementById('hdriBgToggleRow').style.display='flex';
+    if(document.getElementById('hdriBgToggle').checked){
+       scene.background=window.currentHdriTexture;
+       bw.visible=false;if(typeof sweepMesh!=='undefined'&&sweepMesh)sweepMesh.visible=false;
+    }
+    
+    if('environmentIntensity' in scene) { scene.environmentIntensity=+document.getElementById('ctrlHdriInt').value; scene.backgroundIntensity=+document.getElementById('ctrlHdriInt').value; } else { renderer.toneMappingExposure=+document.getElementById('ctrlHdriInt').value; }
+    document.getElementById('loadingOverlay').classList.remove('visible');
+    toast('HDRI yüklendi ✓');
+  },null,err=>{
+    setTimeout(()=>URL.revokeObjectURL(url),5000);
+    document.getElementById('loadingOverlay').classList.remove('visible');
+    toast('HDR hatası — dosya bozuk veya desteklenmiyor');
+  });
   e.target.value='';
 });
 
@@ -1765,7 +1801,7 @@ const BH=1.6;
 mainProductWrapper.add(bottleGroup);
 
 /* ═══ MATERYAl SİSTEMİ ═══ */
-const MAT_P={glass:{roughness:.08,metalness:0,clearcoat:1,opacity:.8},metal:{roughness:.22,metalness:.95,clearcoat:.3,opacity:1},plastic:{roughness:.65,metalness:0,clearcoat:.15,opacity:1},ceramic:{roughness:.35,metalness:0,clearcoat:.8,opacity:1},wood:{roughness:.85,metalness:0,clearcoat:.05,opacity:1},chrome:{roughness:.02,metalness:1,clearcoat:1,opacity:1},silicone:{roughness:.55,metalness:0,clearcoat:.6,opacity:.92},fabric:{roughness:.92,metalness:0,clearcoat:0,opacity:1}};
+const MAT_P={glass:{roughness:0,metalness:0,clearcoat:1,opacity:1,transmission:1,ior:1.5,dispersion:0.01},metal:{roughness:.22,metalness:.95,clearcoat:.3,opacity:1,transmission:0,ior:1.5,dispersion:0},plastic:{roughness:.65,metalness:0,clearcoat:.15,opacity:1,transmission:0,ior:1.5,dispersion:0},ceramic:{roughness:.35,metalness:0,clearcoat:.8,opacity:1,transmission:0,ior:1.5,dispersion:0},wood:{roughness:.85,metalness:0,clearcoat:.05,opacity:1,transmission:0,ior:1.5,dispersion:0},chrome:{roughness:.02,metalness:1,clearcoat:1,opacity:1,transmission:0,ior:1.5,dispersion:0},silicone:{roughness:.55,metalness:0,clearcoat:.6,opacity:.92,transmission:0,ior:1.5,dispersion:0},fabric:{roughness:.92,metalness:0,clearcoat:0,opacity:1,transmission:0,ior:1.5,dispersion:0}};
 const FABRIC_TYPES=[{key:'cotton',name:'Pamuk',desc:'Doğal, mat',color:'#e8dcc8',roughness:.95,clearcoat:0},{key:'silk',name:'İpek',desc:'Parlak, yüksek',color:'#f0e8e0',roughness:.45,clearcoat:.35},{key:'leather',name:'Deri',desc:'Düzgün, sertçe',color:'#7a5040',roughness:.55,clearcoat:.25},{key:'velvet',name:'Kadife',desc:'Derin, mat',color:'#8a6a7a',roughness:.98,clearcoat:0},{key:'denim',name:'Denim',desc:'Kaba örgü',color:'#4a5a78',roughness:.96,clearcoat:0},{key:'wool',name:'Yün',desc:'Çok mat',color:'#b8a898',roughness:.99,clearcoat:0}];
 let curMatKey='glass',curColor='#7a4318',curFabricKey='cotton',loadedGroup=null,usingDefault=true;
 let productTexture=null;
@@ -1774,7 +1810,9 @@ function applyMat(){
   const r=+document.getElementById('ctrlRoughness').value,m=+document.getElementById('ctrlMetalness').value,cc=+document.getElementById('ctrlClearcoat').value,op=+document.getElementById('ctrlOpacity').value;
   const tintOn = document.getElementById('colorTintToggle') && document.getElementById('colorTintToggle').checked;
   const col=new THREE.Color(tintOn ? curColor : '#ffffff');
-  const applyToMesh=(mt)=>{if(!(mt instanceof THREE.MeshPhysicalMaterial)){mt=new THREE.MeshPhysicalMaterial();}mt.color.set(col);mt.roughness=r;mt.metalness=m;mt.clearcoat=cc;mt.clearcoatRoughness=cc*.15;mt.transparent=op<1;mt.opacity=op;if(productTexture){mt.map=productTexture;mt.needsUpdate=true;}else{mt.map=null;mt.needsUpdate=true;}};
+  let trans = 0, ior = 1.5, disp = 0;
+  if(MAT_P[curMatKey]) { trans = MAT_P[curMatKey].transmission || 0; ior = MAT_P[curMatKey].ior || 1.5; disp = MAT_P[curMatKey].dispersion || 0; }
+  const applyToMesh=(mt)=>{if(!(mt instanceof THREE.MeshPhysicalMaterial)){mt=new THREE.MeshPhysicalMaterial();}mt.color.set(col);mt.roughness=r;mt.metalness=m;mt.clearcoat=cc;mt.clearcoatRoughness=cc*.15;mt.transparent=op<1||trans>0;mt.opacity=op;mt.transmission=trans;mt.ior=ior;mt.dispersion=disp;mt.thickness=trans>0?1.0:0;if(productTexture){mt.map=productTexture;mt.needsUpdate=true;}else{mt.map=null;mt.needsUpdate=true;}};
   if(usingDefault){
     for(let i=0;i<3;i++) {
       if(bottleGroup && bottleGroup.children[i]) applyToMesh(bottleGroup.children[i].material);
@@ -1791,6 +1829,9 @@ function applyMat(){
         l.metalness = m;
         l.clearcoat = cc;
         l.opacity = op;
+        l.transmission = trans;
+        l.ior = ior;
+        l.dispersion = disp;
         l.texture = productTexture || l.texture;
         l.texScale = +document.getElementById('ctrlTexScale').value;
         applyMeshMat(l);
@@ -2077,10 +2118,18 @@ function placeModel(g,name){
   g.traverse(n=>{
     if(n.isMesh){
       n.castShadow=true; n.receiveShadow=true;
+      try {
+        if (n.geometry && typeof n.geometry.computeBoundsTree === 'function') {
+           n.geometry.computeBoundsTree();
+        }
+      } catch(e) {
+        console.warn('BVH computation failed for mesh:', n.name, e);
+      }
       if(!n.userData.origMat) n.userData.origMat = n.material.clone();
     }
   });
   mainProductWrapper.add(g);
+  if(window.pathTracer) { if(window.pathTracer.updateScene) window.pathTracer.updateScene(); else window.pathTracer.setScene(scene, camera); }
   
   // Eski global applyMat() çağrısını kaldırıyoruz, katmanları tarıyoruz
   scanModel(g);
@@ -2116,6 +2165,9 @@ function scanModel(g) {
         metalness: 0,
         clearcoat: 0,
         opacity: 1,
+        transmission: 0,
+        ior: 1.5,
+        dispersion: 0,
         texture: null,
         texScale: 1.0,
         visible: true,
@@ -2212,6 +2264,12 @@ function selectMeshLayer(id) {
   document.getElementById('vMdClearcoat').textContent = l.clearcoat.toFixed(2);
   document.getElementById('ctrlMdOpacity').value = l.opacity;
   document.getElementById('vMdOpacity').textContent = l.opacity.toFixed(2);
+  document.getElementById('ctrlMdTransmission').value = l.transmission;
+  document.getElementById('vMdTransmission').textContent = l.transmission.toFixed(2);
+  document.getElementById('ctrlMdIor').value = l.ior;
+  document.getElementById('vMdIor').textContent = l.ior.toFixed(2);
+  document.getElementById('ctrlMdDispersion').value = l.dispersion;
+  document.getElementById('vMdDispersion').textContent = l.dispersion.toFixed(2);
 
   // Transform controls sync
   document.getElementById('ctrlMdPosX').value = l.posX; document.getElementById('vMdPosX').textContent = l.posX.toFixed(2);
@@ -2237,8 +2295,12 @@ function applyMeshMat(l) {
     mt.metalness = l.metalness;
     mt.clearcoat = l.clearcoat;
     mt.clearcoatRoughness = l.clearcoat * 0.15;
-    mt.transparent = l.opacity < 1;
+    mt.transparent = l.opacity < 1 || l.transmission > 0;
     mt.opacity = l.opacity;
+    mt.transmission = l.transmission;
+    mt.ior = l.ior;
+    mt.dispersion = l.dispersion;
+    mt.thickness = l.transmission > 0 ? 1.0 : 0;
     
     if (l.texture) {
       mt.map = l.texture;
@@ -2285,6 +2347,9 @@ document.getElementById('mdMatType').addEventListener('change', e => {
       l.metalness = p.metalness;
       l.clearcoat = p.clearcoat;
       l.opacity = p.opacity;
+      l.transmission = p.transmission || 0;
+      l.ior = p.ior || 1.5;
+      l.dispersion = p.dispersion || 0;
       document.getElementById('ctrlMdRoughness').value = l.roughness;
       document.getElementById('vMdRoughness').textContent = l.roughness.toFixed(2);
       document.getElementById('ctrlMdMetalness').value = l.metalness;
@@ -2293,14 +2358,20 @@ document.getElementById('mdMatType').addEventListener('change', e => {
       document.getElementById('vMdClearcoat').textContent = l.clearcoat.toFixed(2);
       document.getElementById('ctrlMdOpacity').value = l.opacity;
       document.getElementById('vMdOpacity').textContent = l.opacity.toFixed(2);
+      document.getElementById('ctrlMdTransmission').value = l.transmission;
+      document.getElementById('vMdTransmission').textContent = l.transmission.toFixed(2);
+      document.getElementById('ctrlMdIor').value = l.ior;
+      document.getElementById('vMdIor').textContent = l.ior.toFixed(2);
+      document.getElementById('ctrlMdDispersion').value = l.dispersion;
+      document.getElementById('vMdDispersion').textContent = l.dispersion.toFixed(2);
     }
   }
   applyMeshMat(l);
 });
 
-['ctrlMdRoughness','ctrlMdMetalness','ctrlMdClearcoat','ctrlMdOpacity'].forEach(id => {
+['ctrlMdRoughness','ctrlMdMetalness','ctrlMdClearcoat','ctrlMdOpacity','ctrlMdTransmission','ctrlMdIor','ctrlMdDispersion'].forEach(id => {
   const el = document.getElementById(id);
-  const vid = {ctrlMdRoughness:'vMdRoughness',ctrlMdMetalness:'vMdMetalness',ctrlMdClearcoat:'vMdClearcoat',ctrlMdOpacity:'vMdOpacity'}[id];
+  const vid = {ctrlMdRoughness:'vMdRoughness',ctrlMdMetalness:'vMdMetalness',ctrlMdClearcoat:'vMdClearcoat',ctrlMdOpacity:'vMdOpacity',ctrlMdTransmission:'vMdTransmission',ctrlMdIor:'vMdIor',ctrlMdDispersion:'vMdDispersion'}[id];
   const pk = id.replace('ctrlMd', '').toLowerCase();
   el.addEventListener('input', e => {
     const val = parseFloat(el.value);
@@ -2485,7 +2556,7 @@ function loadModel(files){
   else loadGLB(mainFile); // GLB şimdilik tekil dosya
 }
 
-function loadGLB(file){document.getElementById('loadingText').textContent=file.name+' okunuyor…';document.getElementById('loadingOverlay').classList.add('visible');if(gltfLoader){const url=URL.createObjectURL(file);gltfLoader.load(url,gltf=>{URL.revokeObjectURL(url);placeModel(gltf.scene,file.name);},null,err=>{document.getElementById('loadingOverlay').classList.remove('visible');alert('GLB hatası: '+err);});return;}const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';s.onload=()=>{gltfLoader=new THREE.GLTFLoader();loadGLB(file);};s.onerror=()=>{document.getElementById('loadingOverlay').classList.remove('visible');toast('GLTFLoader yüklenemedi');};document.head.appendChild(s);}
+function loadGLB(file){document.getElementById('loadingText').textContent=file.name+' okunuyor…';document.getElementById('loadingOverlay').classList.add('visible');if(!gltfLoader)gltfLoader=new window.THREE.GLTFLoader();const url=URL.createObjectURL(file);gltfLoader.load(url,gltf=>{URL.revokeObjectURL(url);placeModel(gltf.scene,file.name);},null,err=>{document.getElementById('loadingOverlay').classList.remove('visible');alert('GLB hatası: '+err);});}
 const dz=document.getElementById('dropZone');
 if (dz) {
   dz.addEventListener('click',()=>document.getElementById('fileInput').click());
@@ -2558,12 +2629,12 @@ let plpGltfLoader=null;
 
 function getPLPGltfLoader(cb){
   if(plpGltfLoader){cb(plpGltfLoader);return;}
-  if(typeof THREE.GLTFLoader!=='undefined'){plpGltfLoader=new THREE.GLTFLoader();cb(plpGltfLoader);return;}
-  const s=document.createElement('script');
-  s.src='https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
-  s.onload=()=>{plpGltfLoader=new THREE.GLTFLoader();cb(plpGltfLoader);};
-  s.onerror=()=>toast('GLTFLoader yüklenemedi');
-  document.head.appendChild(s);
+  if(window.THREE && window.THREE.GLTFLoader){
+    plpGltfLoader=new window.THREE.GLTFLoader();
+    cb(plpGltfLoader);
+    return;
+  }
+  toast('GLTFLoader bulunamadı');
 }
 
 document.getElementById('plpUploadBtn').addEventListener('click',()=>document.getElementById('plpFileInput').click());
@@ -2769,6 +2840,7 @@ document.getElementById('btnResetPost').addEventListener('click',()=>{postState=
 
 /* ═══ KAMERA ═══ */
 document.getElementById('ctrlFov').addEventListener('input',e=>{camera.fov=+e.target.value;camera.updateProjectionMatrix();document.getElementById('vFov').textContent=e.target.value+'°';});
+document.getElementById('ctrlExp').addEventListener('input',e=>{renderer.toneMappingExposure=+e.target.value;document.getElementById('vExp').textContent=parseFloat(e.target.value).toFixed(2);});
 let curAR='free';
 const AR_RATIOS={'1:1':[1,1],'4:5':[4,5],'3:2':[3,2],'16:9':[16,9],'free':null};
 document.querySelectorAll('.ar-btn').forEach(btn=>{btn.addEventListener('click',()=>{document.querySelectorAll('.ar-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');curAR=btn.dataset.ar;updateARFrame();});});
@@ -2860,7 +2932,7 @@ function buildLight(sp){
   const dpos=pos.clone().lerp(LT,params.diffD);diffGroup.position.copy(dpos);diffGroup.lookAt(pos);diffGroup.visible=params.diffOn&&!equipHidden;scene.add(diffGroup);
   lightObjects[id]={spot,pm,cone,sg,leg,cfg,params,defs,curPow:cfg.defPow,diffGroup,diffMat,diffRingMat,areaSpots,right,upDir};_updateAreaSpots(id);return id;
 }
-function _updateAreaSpots(id){const o=lightObjects[id];const{params,areaSpots,cfg,curPow}=o;const pos=p2p(params.hAngle,params.vAngle,params.dist);const dir=LT.clone().sub(pos).normalize();const up=new THREE.Vector3(0,1,0);const r=new THREE.Vector3().crossVectors(dir,up).normalize();const u=new THREE.Vector3().crossVectors(r,dir).normalize();o.right.copy(r);o.upDir.copy(u);const dpos=pos.clone().lerp(LT,params.diffD);const baseI=(curPow/100)*cfg.maxI;const t=params.diffOn?params.diffO:0;o.spot.intensity=baseI*(1-t*0.7);o.spot.penumbra=params.pen;areaSpots.forEach((as,i)=>{const off=DIFF_OFFSETS[i];const spread=params.diffR*(i===0?0:1);const spos=dpos.clone().addScaledVector(r,off[0]*spread).addScaledVector(u,off[1]*spread);as.spot.position.copy(spos);as.tgt.position.copy(LT);as.spot.color.set(cfg.color);as.spot.intensity=t*(baseI/5)*1.4;as.spot.penumbra=0.95;as.spot.angle=THREE.MathUtils.degToRad(params.spread+12);as.spot.decay=params.decay;as.spot.visible=params.diffOn&&o.spot.visible;});}
+function _updateAreaSpots(id){const o=lightObjects[id];const{params,areaSpots,cfg,curPow}=o;const pos=p2p(params.hAngle,params.vAngle,params.dist);const dir=LT.clone().sub(pos).normalize();const up=new THREE.Vector3(0,1,0);const r=new THREE.Vector3().crossVectors(dir,up).normalize();const u=new THREE.Vector3().crossVectors(r,dir).normalize();o.right.copy(r);o.upDir.copy(u);const dpos=pos.clone().lerp(LT,params.diffD);const baseI=(curPow/100)*cfg.maxI;const t=params.diffOn?params.diffO:0;o.spot.intensity=baseI*(1-t*0.7);o.spot.penumbra=params.pen;areaSpots.forEach((as,i)=>{const off=DIFF_OFFSETS[i];const spread=params.diffR*(i===0?0:1);const spos=dpos.clone().addScaledVector(r,off[0]*spread).addScaledVector(u,off[1]*spread);as.spot.position.copy(spos);as.tgt.position.copy(LT);as.spot.color.set(cfg.color);as.spot.intensity=t*(baseI/5)*1.4;as.spot.penumbra=0.95;as.spot.angle=THREE.MathUtils.degToRad(params.spread+12);as.spot.decay=params.decay;as.spot.visible=params.diffOn&&o.spot.visible;});if(o.pm&&o.pm.isMeshStandardMaterial){o.pm.emissiveIntensity=curPow;if(window.pathTracer&&window.pathTracer.updateMaterials)window.pathTracer.updateMaterials();}}
 function destroyLight(id){const o=lightObjects[id];if(!o)return;[o.sg,o.leg,o.spot,o.cone,o.diffGroup].forEach(x=>scene.remove(x));o.areaSpots.forEach(as=>{scene.remove(as.spot);scene.remove(as.tgt);});delete lightObjects[id];}
 
 function buildLight(sp){
@@ -2872,7 +2944,7 @@ function buildLight(sp){
   const ang=THREE.MathUtils.degToRad(params.spread);
   const dir=LT.clone().sub(pos).normalize();
   const sg=new THREE.Group();
-  const pm=new THREE.MeshBasicMaterial({color:cfg.color,transparent:true,opacity:.81});
+  const pm=new THREE.MeshStandardMaterial({color:0x000000,emissive:cfg.color,emissiveIntensity:cfg.defPow,transparent:true,opacity:.9,roughness:1,metalness:0});
   sg.position.copy(pos);sg.lookAt(LT);scene.add(sg);
   const lh=Math.max(.05,pos.y);const leg=new THREE.Group();
   const legMat=new THREE.MeshStandardMaterial({color:0x111111,metalness:0.7,roughness:0.4});
@@ -3038,7 +3110,7 @@ function updTitle(){
     });
   }
 }
-function buildCard(id){const o=lightObjects[id];const hx='#'+o.cfg.color.getHexString();const card=document.createElement('div');card.className='light-card';card.dataset.id=id;const head=document.createElement('div');head.className='light-card-head';const dot=document.createElement('span');dot.className='dot';dot.style.background=hx;dot.style.color=hx;const ni=document.createElement('input');ni.type='text';ni.className='light-name';ni.value=t(o.cfg.label);ni.addEventListener('click',e=>e.stopPropagation());ni.addEventListener('input',e=>{o.cfg.label=e.target.value;if(activeId===id)document.getElementById('ldpName').textContent=e.target.value;});ni.addEventListener('keydown',e=>{if(e.key==='Enter')ni.blur();});const sl=document.createElement('label');sl.className='switch';sl.addEventListener('click',e=>e.stopPropagation());const si=document.createElement('input');si.type='checkbox';si.checked=true;const ss=document.createElement('span');ss.className='slider-toggle';sl.append(si,ss);head.append(dot,ni,sl);const ar=document.createElement('div');ar.className='card-actions';const db=document.createElement('button');db.className='card-action-btn';db.textContent='📋 '+t('Kopya');const dlb=document.createElement('button');dlb.className='card-action-btn del';dlb.textContent='🗑 '+t('Sil');db.addEventListener('click',e=>{e.stopPropagation();dupL(id);});dlb.addEventListener('click',e=>{e.stopPropagation();delL(id);});ar.append(db,dlb);const pr=document.createElement('div');pr.className='power-row';const ps2=document.createElement('input');ps2.type='range';ps2.min=0;ps2.max=100;ps2.value=o.cfg.defPow;ps2.addEventListener('click',e=>e.stopPropagation());const pv=document.createElement('span');pv.className='power-value';pv.textContent=o.cfg.defPow+'%';pr.append(ps2,pv);const kr=document.createElement('div');kr.className='kelvin-row';const klRow=document.createElement('div');klRow.className='kelvin-label-row';const klLabel=document.createElement('span');klLabel.className='kelvin-label';klLabel.textContent='🌡️ '+t('Renk Sıcaklığı');const klVal=document.createElement('span');klVal.className='kelvin-val';klVal.textContent=(o.cfg.kelvin||5600)+'K';klRow.append(klLabel,klVal);const kt=document.createElement('div');kt.className='kelvin-track';const ks=document.createElement('input');ks.type='range';ks.min=1000;ks.max=10000;ks.step=50;ks.value=o.cfg.kelvin||5600;ks.addEventListener('click',e=>e.stopPropagation());ks.addEventListener('input',e=>{e.stopPropagation();const K=+e.target.value;o.cfg.kelvin=K;klVal.textContent=K+'K';const col=kelvinToThreeColor(K);o.cfg.color=col;o.spot.color.copy(col);o.pm.color.copy(col);o.cone.material.color.copy(col);o.areaSpots.forEach(as=>as.spot.color.copy(col));const hx2='#'+col.getHexString();dot.style.background=hx2;dot.style.color=hx2;if(activeId===id)document.getElementById('ldpDot').style.cssText='background:'+hx2+';color:'+hx2;});kt.append(ks);kr.append(klRow,kt);card.append(head,ar,pr,kr);card.addEventListener('click',()=>openLDP(id));si.addEventListener('change',e=>{const on=e.target.checked,ob=lightObjects[id];if(!ob)return;ob.spot.visible=on;ob.cone.visible=on&&beams&&!equipHidden;ob.sg.visible=on&&!equipHidden;ob.leg.visible=on&&!equipHidden;ob.diffGroup.visible=on&&ob.params.diffOn&&!equipHidden;ob.areaSpots.forEach(as=>{as.spot.visible=on&&ob.params.diffOn;});if(on){ob.pm.color.set(ob.cfg.color);ob.pm.opacity=.2+(ob.curPow/100)*.7;}else{ob.pm.color.set(0x222222);ob.pm.opacity=.5;}});ps2.addEventListener('input',e=>{const val=+e.target.value,ob=lightObjects[id];if(!ob)return;ob.curPow=val;if(ob.spot.visible)ob.pm.opacity=.2+(val/100)*.7;pv.textContent=val+'%';_updateAreaSpots(id);});return card;}
+function buildCard(id){const o=lightObjects[id];const hx='#'+o.cfg.color.getHexString();const card=document.createElement('div');card.className='light-card';card.dataset.id=id;const head=document.createElement('div');head.className='light-card-head';const dot=document.createElement('span');dot.className='dot';dot.style.background=hx;dot.style.color=hx;const ni=document.createElement('input');ni.type='text';ni.className='light-name';ni.value=t(o.cfg.label);ni.addEventListener('click',e=>e.stopPropagation());ni.addEventListener('input',e=>{o.cfg.label=e.target.value;if(activeId===id)document.getElementById('ldpName').textContent=e.target.value;});ni.addEventListener('keydown',e=>{if(e.key==='Enter')ni.blur();});const sl=document.createElement('label');sl.className='switch';sl.addEventListener('click',e=>e.stopPropagation());const si=document.createElement('input');si.type='checkbox';si.checked=true;const ss=document.createElement('span');ss.className='slider-toggle';sl.append(si,ss);head.append(dot,ni,sl);const ar=document.createElement('div');ar.className='card-actions';const db=document.createElement('button');db.className='card-action-btn';db.textContent='📋 '+t('Kopya');const dlb=document.createElement('button');dlb.className='card-action-btn del';dlb.textContent='🗑 '+t('Sil');db.addEventListener('click',e=>{e.stopPropagation();dupL(id);});dlb.addEventListener('click',e=>{e.stopPropagation();delL(id);});ar.append(db,dlb);const pr=document.createElement('div');pr.className='power-row';const ps2=document.createElement('input');ps2.type='range';ps2.min=0;ps2.max=100;ps2.value=o.cfg.defPow;ps2.addEventListener('click',e=>e.stopPropagation());const pv=document.createElement('span');pv.className='power-value';pv.textContent=o.cfg.defPow+'%';pr.append(ps2,pv);const kr=document.createElement('div');kr.className='kelvin-row';const klRow=document.createElement('div');klRow.className='kelvin-label-row';const klLabel=document.createElement('span');klLabel.className='kelvin-label';klLabel.textContent='🌡️ '+t('Renk Sıcaklığı');const klVal=document.createElement('span');klVal.className='kelvin-val';klVal.textContent=(o.cfg.kelvin||5600)+'K';klRow.append(klLabel,klVal);const kt=document.createElement('div');kt.className='kelvin-track';const ks=document.createElement('input');ks.type='range';ks.min=1000;ks.max=10000;ks.step=50;ks.value=o.cfg.kelvin||5600;ks.addEventListener('click',e=>e.stopPropagation());ks.addEventListener('input',e=>{e.stopPropagation();const K=+e.target.value;o.cfg.kelvin=K;klVal.textContent=K+'K';const col=kelvinToThreeColor(K);o.cfg.color=col;o.spot.color.copy(col);if(o.pm.isMeshStandardMaterial)o.pm.emissive.copy(col);else o.pm.color.copy(col);o.cone.material.color.copy(col);o.areaSpots.forEach(as=>as.spot.color.copy(col));const hx2='#'+col.getHexString();dot.style.background=hx2;dot.style.color=hx2;if(activeId===id)document.getElementById('ldpDot').style.cssText='background:'+hx2+';color:'+hx2;});kt.append(ks);kr.append(klRow,kt);card.append(head,ar,pr,kr);card.addEventListener('click',()=>openLDP(id));si.addEventListener('change',e=>{const on=e.target.checked,ob=lightObjects[id];if(!ob)return;ob.spot.visible=on;ob.cone.visible=on&&beams&&!equipHidden;ob.sg.visible=on&&!equipHidden;ob.leg.visible=on&&!equipHidden;ob.diffGroup.visible=on&&ob.params.diffOn&&!equipHidden;ob.areaSpots.forEach(as=>{as.spot.visible=on&&ob.params.diffOn;});if(on){if(ob.pm.isMeshStandardMaterial)ob.pm.emissive.set(ob.cfg.color);else ob.pm.color.set(ob.cfg.color);ob.pm.opacity=.2+(ob.curPow/100)*.7;}else{if(ob.pm.isMeshStandardMaterial)ob.pm.emissive.set(0x000000);else ob.pm.color.set(0x222222);ob.pm.opacity=.5;}});ps2.addEventListener('input',e=>{const val=+e.target.value,ob=lightObjects[id];if(!ob)return;ob.curPow=val;if(ob.spot.visible)ob.pm.opacity=.2+(val/100)*.7;pv.textContent=val+'%';_updateAreaSpots(id);});return card;}
 function addDOM(id){const ab=pc.querySelector('.add-card');pc.insertBefore(buildCard(id),ab);pc.querySelector('.light-card[data-id="'+id+'"]').scrollIntoView({behavior:'smooth',block:'nearest',inline:'nearest'});}
 function delL(id){if(Object.keys(lightObjects).length<=1)return;if(activeId===id)closeLDP();destroyLight(id);const c=pc.querySelector('.light-card[data-id="'+id+'"]');if(c)c.remove();updTitle();}
 function dupL(id){const o=lightObjects[id];if(!o)return;const nid=buildLight({label:o.cfg.label+' Kopya',kelvin:o.cfg.kelvin||5600,power:o.curPow,hAngle:o.params.hAngle+20,vAngle:o.params.vAngle,dist:o.params.dist,spread:o.params.spread,pen:o.params.pen,blur:o.params.blur,decay:o.params.decay,diffOn:o.params.diffOn,diffR:o.params.diffR,diffD:o.params.diffD,diffO:o.params.diffO,ps:o.cfg.ps.slice()});addDOM(nid);updTitle();setTimeout(()=>openLDP(nid),80);}
@@ -3692,11 +3764,10 @@ function animate(t, frame){
     }
   }
 
-  const bokehEl=document.getElementById('bokehToggle');
   if (renderer.xr.isPresenting) {
     renderer.render(scene, camera);
-  } else if(composer && bokehEl && bokehEl.checked){
-    composer.render();
+  } else if (window.isPathTracing && window.pathTracer) {
+    window.pathTracer.renderSample();
   } else {
     renderer.render(scene,camera);
   }
@@ -3798,7 +3869,7 @@ function loadBGImage(file){
       if(bgImageTexture)bgImageTexture.dispose();
       if(bgPlane){scene.remove(bgPlane);bgPlane.geometry.dispose();bgPlane.material.dispose();bgPlane=null;}
       bgImageTexture=tex;
-      tex.encoding=THREE.sRGBEncoding;
+      tex.colorSpace=THREE.SRGBColorSpace;
       scene.background=tex;
       bw.visible=false;if(typeof sweepMesh!=='undefined'&&sweepMesh)sweepMesh.visible=false;
       
@@ -3901,7 +3972,7 @@ document.getElementById('floorImgInput').addEventListener('change',e=>{
       if(floorImgTexture)floorImgTexture.dispose();
       floorImgTexture=tex;
       tex.wrapS=tex.wrapT=THREE.RepeatWrapping;
-      tex.encoding=THREE.sRGBEncoding;
+      tex.colorSpace=THREE.SRGBColorSpace;
       floorMat.map=tex;floorMat.needsUpdate=true;
       document.getElementById('floorImgRemoveBtn').style.display='block';
       toast(t('Zemin görseli yüklendi ✓'));
@@ -5463,6 +5534,15 @@ document.querySelectorAll('.sp-btn').forEach(function(btn) {
     });
   }
 
+document.getElementById('ctrlPTBounces').addEventListener('input', e => {
+  const val = parseInt(e.target.value);
+  document.getElementById('vPTBounces').textContent = val;
+  if(window.pathTracer) {
+    window.pathTracer.bounces = val;
+    if(typeof window.pathTracer.updateMaterials === 'function') window.pathTracer.updateMaterials();
+  }
+});
+
 /* --- PREMIUM FEATURES LOGIC --- */
 const sToggle = document.getElementById('ssaoToggle');
 if(sToggle) sToggle.addEventListener('change', e => {
@@ -6008,7 +6088,7 @@ if(btnGenerateAI) {
     loader.load(
       url, 
       tex => {
-        tex.encoding = THREE.sRGBEncoding;
+        tex.colorSpace = THREE.SRGBColorSpace;
         
         if (aiDome) { scene.remove(aiDome); aiDome.geometry.dispose(); aiDome.material.dispose(); aiDome = null; }
         
@@ -6034,11 +6114,8 @@ if(btnGenerateAI) {
         camera.far = 2000;
         camera.updateProjectionMatrix();
         
-        if(typeof getPMREM === 'function') {
-          try {
-            scene.environment = getPMREM().fromEquirectangular(tex).texture;
-          } catch(e) { console.error('PMREM error:', e); }
-        }
+        scene.environment = tex;
+        if(window.pathTracer) window.pathTracer.updateEnvironment();
         
         if(aiProgress) aiProgress.style.display = 'none';
         document.getElementById('btnRemoveAI').style.display = 'block';
@@ -6062,7 +6139,7 @@ const btnRemoveAI = document.getElementById('btnRemoveAI');
 if(btnRemoveAI) {
   btnRemoveAI.addEventListener('click', () => {
     if(aiDome) { scene.remove(aiDome); aiDome.geometry.dispose(); aiDome.material.dispose(); aiDome = null; }
-    scene.environment = null;
+    scene.environment = null; if(window.pathTracer) window.pathTracer.updateEnvironment();
     btnRemoveAI.style.display = 'none';
     
     // Restore physical backgrounds if needed
@@ -6070,17 +6147,106 @@ if(btnRemoveAI) {
     if(typeof sweepMesh !== 'undefined' && sweepMesh && document.getElementById('envModeSel') && document.getElementById('envModeSel').value === 'sweep') sweepMesh.visible = true;
   });
 }
-// 2. 2D'DEN 3D'YE ÇEVİRİ (Hunyuan3D)
+
+const aiStretchToggle = document.getElementById('aiStretchToggle');
+if(aiStretchToggle) {
+  aiStretchToggle.addEventListener('change', () => {
+    if(aiDome && aiDome.material && aiDome.material.map) {
+      const tex = aiDome.material.map;
+      const isStretch = aiStretchToggle.checked;
+      const currentRotationY = aiDome.rotation.y;
+      
+      scene.remove(aiDome);
+      aiDome.geometry.dispose();
+      
+      if (isStretch) {
+        const geo = new THREE.SphereGeometry(500, 64, 64);
+        const mat = new THREE.MeshBasicMaterial({side: THREE.BackSide, color: 0xffffff, map: tex, fog: false});
+        aiDome = new THREE.Mesh(geo, mat);
+        tex.wrapS = THREE.RepeatWrapping;
+        tex.repeat.x = -1;
+        aiDome.rotation.y = currentRotationY;
+      } else {
+        const geo = new THREE.PlaneGeometry(800, 400); 
+        const mat = new THREE.MeshBasicMaterial({side: THREE.DoubleSide, color: 0xffffff, map: tex, fog: false});
+        aiDome = new THREE.Mesh(geo, mat);
+        aiDome.position.set(0, 50, -300);
+        aiDome.rotation.y = currentRotationY;
+      }
+      
+      scene.add(aiDome);
+    }
+  });
+}
+
+// 2. 2D'DEN 3D'YE ÇEVİRİ - Ortak Değişkenler
+const HF_SPACE = 'https://tencent-hunyuan3d-2.hf.space';
+const btnOpen3DSite = document.getElementById('btnOpen3DSite');
+const btnLoadGlb = document.getElementById('btnLoadGlb');
+const ai3dGlbInput = document.getElementById('ai3dGlbInput');
+
 const btnSelectAI3D = document.getElementById('btnSelectAI3D');
 const ai3dFileInput = document.getElementById('ai3dFileInput');
 const ai3dPreviewContainer = document.getElementById('ai3dPreviewContainer');
 const ai3dPreviewImg = document.getElementById('ai3dPreviewImg');
 const btnGenerateAI3D = document.getElementById('btnGenerateAI3D');
+
 const ai3dProgress = document.getElementById('ai3dProgress');
 const ai3dStatusText = document.getElementById('ai3dStatusText');
-const ai3dStatusDetail = document.getElementById('ai3dStatusDetail');
 const ai3dProgressBar = document.getElementById('ai3dProgressBar');
 
+function ai3dSetStatus(text, widthPercent, color = '#2fd491') {
+  ai3dStatusText.innerText = text;
+  ai3dStatusText.style.color = color;
+  ai3dProgressBar.style.width = widthPercent + '%';
+  ai3dProgressBar.style.background = color;
+}
+
+function ai3dLoadGLB(url) {
+  const gltfLoader = new THREE.GLTFLoader();
+  gltfLoader.load(url, (gltf) => {
+    const model = gltf.scene;
+    const box = new THREE.Box3().setFromObject(model);
+    const center = box.getCenter(new THREE.Vector3());
+    const size = box.getSize(new THREE.Vector3());
+    const maxDim = Math.max(size.x, size.y, size.z);
+    const scale = 5 / maxDim;
+    model.scale.setScalar(scale);
+    model.position.sub(center.multiplyScalar(scale));
+    model.position.y += (size.y * scale) / 2;
+    model.traverse(n => { if(n.isMesh) { n.castShadow = true; n.receiveShadow = true; } });
+    mainProductWrapper.add(model);
+    
+    ai3dSetStatus('✅ Model sahneye eklendi!', 100);
+    if(typeof toast === 'function') toast('3D Model başarıyla yüklendi! 🎉');
+    
+    setTimeout(() => { 
+      ai3dProgress.style.display = 'none';
+      if(btnGenerateAI3D) btnGenerateAI3D.style.display = 'block';
+    }, 3000);
+  }, undefined, (err) => {
+    ai3dSetStatus('❌ Yükleme hatası: ' + err.message, 100, 'red');
+  });
+}
+
+// Yöntem 2: Manuel Yükleme Olayları
+if(btnOpen3DSite) {
+  btnOpen3DSite.addEventListener('click', () => window.open('https://3d.hunyuan.tencent.com', '_blank'));
+}
+
+if(btnLoadGlb) {
+  btnLoadGlb.addEventListener('click', () => ai3dGlbInput.click());
+  ai3dGlbInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if(!file) return;
+    ai3dProgress.style.display = 'block';
+    ai3dSetStatus('GLB yükleniyor...', 40);
+    const url = URL.createObjectURL(file);
+    ai3dLoadGLB(url);
+  });
+}
+
+// Yöntem 1: Otomatik API Olayları
 if(btnSelectAI3D) {
   btnSelectAI3D.addEventListener('click', () => ai3dFileInput.click());
   
@@ -6100,125 +6266,52 @@ if(btnSelectAI3D) {
 
     btnGenerateAI3D.style.display = 'none';
     ai3dProgress.style.display = 'block';
-    ai3dStatusText.style.color = '#2fd491';
-    ai3dProgressBar.style.background = '#2fd491';
-    ai3dSetStatus('Resim y\u00fckleniyor...', 'Tencent Hunyuan3D-2', 10);
+    ai3dSetStatus('Resim hazırlanıyor...', 10);
 
     try {
-      // ADIM 1: Resmi HuggingFace Space'e y\u00fckle
-      const formData = new FormData();
-      formData.append('files', file, file.name);
-      const uploadRes = await fetch(`${HF_SPACE}/upload`, { method: 'POST', body: formData });
-      if(!uploadRes.ok) throw new Error(`Dosya y\u00fckleme hatas\u0131: HTTP ${uploadRes.status}`);
-      const uploadedPaths = await uploadRes.json();
-      const uploadedPath = uploadedPaths[0];
-      ai3dSetStatus('Dosya y\u00fcklendi! Kuyrukta bekleniyor...', '', 25);
-
-      // ADIM 2: /shape_generation endpoint'ine g\u00f6nder (kaynak koddan \u00f6\u011frenildi)
-      // Parametre s\u0131ras\u0131: caption, image, mv_front, mv_back, mv_left, mv_right,
-      //   num_steps, cfg_scale, seed, octree_resolution, check_box_rembg, num_chunks, randomize_seed
-      const sessionHash = Math.random().toString(36).slice(2);
-      const fileData = { path: uploadedPath, meta: { _type: 'gradio.FileData' }, orig_name: file.name };
-
-      const joinRes = await fetch(`${HF_SPACE}/queue/join`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          data: [
-            null,       // caption
-            fileData,   // image
-            null,       // mv_image_front
-            null,       // mv_image_back
-            null,       // mv_image_left
-            null,       // mv_image_right
-            5,          // num_steps (Turbo=5)
-            5.0,        // cfg_scale
-            1234,       // seed
-            256,        // octree_resolution
-            true,       // check_box_rembg (arka plan kaldır)
-            8000,       // num_chunks
-            false       // randomize_seed
-          ],
-          fn_index: 2,
-          event_data: null,
-          session_hash: sessionHash,
-          trigger_id: null
-        })
-      });
-      if(!joinRes.ok) {
-        const errText = await joinRes.text();
-        throw new Error(`Kuyruk hatas\u0131: ${joinRes.status} - ${errText}`);
+      // @gradio/client modülünü dinamik olarak içe aktar
+      ai3dSetStatus('İstemci yükleniyor...', 15);
+      const { Client, handle_file } = await import('https://cdn.jsdelivr.net/npm/@gradio/client/dist/index.min.js');
+      
+      ai3dSetStatus('HuggingFace sunucusuna bağlanılıyor...', 20);
+      const client = await Client.connect("tencent/Hunyuan3D-2");
+      
+      ai3dSetStatus('Model üretiliyor (Bu işlem 3-5 dakika sürebilir)...', 40);
+      
+      // API çağrısı - Gradio'nun kendi handle_file'ı her türlü JSON sorununu çözer
+      const result = await client.predict("/shape_generation", [
+        "", // caption
+        handle_file(file), // image
+        null, null, null, null, // mv_images
+        30, // steps (Standart kalite için 30 önerilir)
+        5.0, // guidance_scale
+        1234, // seed
+        256, // octree_resolution
+        true, // check_box_rembg
+        8000, // num_chunks
+        false // randomize_seed
+      ]);
+      
+      const fileOut = result.data[0];
+      let glbUrl = null;
+      if (fileOut && fileOut.url) {
+        glbUrl = fileOut.url;
+      } else if (fileOut && fileOut.path) {
+        glbUrl = fileOut.path.startsWith('http') ? fileOut.path : `https://tencent-hunyuan3d-2.hf.space/file=${fileOut.path}`;
+      } else {
+        throw new Error("GLB URL bulunamadı");
       }
-      ai3dSetStatus('Kuyrukta bekleniyor...', 'S\u0131ran\u0131z gelince otomatik ba\u015flayacak', 35);
-
-      // ADIM 3: Fetch Streaming ile SSE dinle (EventSource yerine - daha güvenilir)
-      await new Promise((resolve, reject) => {
-        fetch(`${HF_SPACE}/queue/data?session_hash=${sessionHash}`, {
-          headers: { 'Accept': 'text/event-stream', 'Cache-Control': 'no-cache' }
-        }).then(response => {
-          if(!response.ok) { reject(new Error(`SSE ba\u011flant\u0131 hatas\u0131: ${response.status}`)); return; }
-          const reader = response.body.getReader();
-          const decoder = new TextDecoder();
-          let buffer = '';
-
-          function readChunk() {
-            reader.read().then(({ done, value }) => {
-              if(done) { reject(new Error('Stream kapand\u0131')); return; }
-              buffer += decoder.decode(value, { stream: true });
-              const lines = buffer.split('\n');
-              buffer = lines.pop() || '';
-
-              for(const line of lines) {
-                if(!line.startsWith('data:')) continue;
-                try {
-                  const msg = JSON.parse(line.slice(5).trim());
-                  console.log('SSE MSG:', msg.msg, msg);
-
-                  if(msg.msg === 'queue_full') { reader.cancel(); reject(new Error('Sunucu kuyru\u011fu dolu.')); return; }
-                  if(msg.msg === 'estimation') {
-                    const rank = msg.rank != null ? msg.rank : '?';
-                    const eta = msg.rank_eta ? `~${Math.round(msg.rank_eta)}s` : 'L\u00fctfen bekleyin';
-                    ai3dSetStatus(`Kuyrukta bekleniyor (S\u0131ra: ${rank})`, eta, 40);
-                  }
-                  if(msg.msg === 'process_starts') ai3dSetStatus('\u2699\ufe0f Yapay zeka \u00fcretiyor...', '1-3 dakika s\u00fcrebilir!', 60);
-                  if(msg.msg === 'process_generating') ai3dSetStatus('\ud83d\udd04 Model olu\u015fturuluyor...', '', 75);
-                  if(msg.msg === 'process_completed') {
-                    reader.cancel();
-                    const output = msg.output;
-                    if(output && output.error) { reject(new Error('Sunucu: ' + output.error)); return; }
-                    const findGlb = (obj) => {
-                      if(!obj) return null;
-                      if(typeof obj === 'string' && (obj.endsWith('.glb') || obj.endsWith('.obj')))
-                        return obj.startsWith('http') ? obj : `${HF_SPACE}/file=${obj}`;
-                      if(obj && obj.url) return obj.url;
-                      if(obj && obj.path) return obj.path.startsWith('http') ? obj.path : `${HF_SPACE}/file=${obj.path}`;
-                      if(Array.isArray(obj)) { for(const i of obj) { const r = findGlb(i); if(r) return r; } }
-                      if(typeof obj === 'object') { for(const k in obj) { const r = findGlb(obj[k]); if(r) return r; } }
-                      return null;
-                    };
-                    const glbUrl = findGlb(output?.data);
-                    console.log('Output data:', JSON.stringify(output?.data || '').substring(0, 500));
-                    if(glbUrl) { ai3dSetStatus('\ud83d\udce6 Model indiriliyor...', '', 90); resolve(glbUrl); }
-                    else reject(new Error('GLB/OBJ URL bulunamad\u0131. F12 > Console\'a bak\u0131n.'));
-                    return;
-                  }
-                  if(msg.msg === 'process_errored') { reader.cancel(); reject(new Error('Sunucu hata verdi.')); return; }
-                } catch(e) { /* JSON parse hatas\u0131n\u0131 yoksay */ }
-              }
-              readChunk(); // sonraki chunk'u oku
-            }).catch(e => reject(new Error('Okuma hatas\u0131: ' + e.message)));
-          }
-          readChunk();
-        }).catch(e => reject(new Error('SSE ba\u011flanam\u0131yor: ' + e.message)));
-
-        setTimeout(() => reject(new Error('Zaman a\u015f\u0131m\u0131 (5 dakika).')), 300000);
-      }).then(glbUrl => { ai3dLoadGLB(glbUrl); });
+      
+      ai3dSetStatus('📦 Model indiriliyor...', 90);
+      ai3dLoadGLB(glbUrl);
 
     } catch(err) {
-      console.error('AI 3D Hata:', err);
-      ai3dStatusText.style.color = 'red';
-      ai3dProgressBar.style.background = 'red';
-      ai3dSetStatus('\u274c Hata olu\u015ftu!', err.message);
+      console.error(err);
+      if(err.message.includes('Failed to fetch')) {
+         ai3dSetStatus('❌ Hata: Sunucu bağlantısı reddedildi (Lütfen projeyi bir web sunucusunda (örn. Github Pages) çalıştırın)', 100, 'red');
+      } else {
+         ai3dSetStatus('❌ Hata: ' + err.message, 100, 'red');
+      }
       btnGenerateAI3D.style.display = 'block';
     }
   });
