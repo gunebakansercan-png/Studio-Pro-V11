@@ -1566,11 +1566,11 @@ canvas.addEventListener('pointermove',e=>{
     }
     trans=null;updateCam();
   }
-  else if(ptrs.size===2){const op=[...ptrs.entries()].find(([id])=>id!==e.pointerId)[1];camR=clamp(camR-(Math.hypot(c.x-op.x,c.y-op.y)-Math.hypot(o.x-op.x,o.y-op.y))*.02,3.2,18);trans=null;updateCam();}
+  else if(ptrs.size===2){const op=[...ptrs.entries()].find(([id])=>id!==e.pointerId)[1];camR=clamp(camR-(Math.hypot(c.x-op.x,c.y-op.y)-Math.hypot(o.x-op.x,o.y-op.y))*.02,1.0,18);trans=null;updateCam();}
   ptrs.set(e.pointerId,c);
 });
 ['pointerup','pointercancel'].forEach(ev=>canvas.addEventListener(ev,e=>ptrs.delete(e.pointerId)));
-canvas.addEventListener('wheel',e=>{e.preventDefault();camR=clamp(camR+e.deltaY*.01,3.2,18);trans=null;updateCam();},{passive:false});
+canvas.addEventListener('wheel',e=>{e.preventDefault();camR=clamp(camR+e.deltaY*.01,1.0,18);trans=null;updateCam();},{passive:false});
 const CP={front:{th:0,ph:Math.PI/2.25,r:7.6},threeQuarter:{th:Math.PI/4,ph:Math.PI/2.6,r:8.2},top:{th:Math.PI/3.4,ph:.42,r:9.2},side:{th:Math.PI/2,ph:Math.PI/2.8,r:7.8},back:{th:Math.PI,ph:Math.PI/2.6,r:7.6},low:{th:Math.PI/4,ph:Math.PI/1.7,r:7.2}};
 let trans=null;
 function goPreset(n){const p=CP[n]||CP.threeQuarter;trans={fTh:camTh,fPh:camPh,fR:camR,tTh:p.th,tPh:p.ph,tR:p.r,t:0};}
