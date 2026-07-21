@@ -1137,6 +1137,30 @@ body.ar-mode #toast {
        <button class="scene-btn" id="btnGenerateAI" style="width:100%;margin-bottom:8px;background:rgba(212,145,47,.15);border-color:#d4912f;color:var(--amber);">✨ Yapay Zeka ile Oluştur</button>
        <div id="aiProgress" style="font-size:10px;color:var(--amber);text-align:center;display:none;margin-bottom:8px;padding:4px;border:1px dashed var(--amber);border-radius:4px;"></div>
        <button class="scene-btn" id="btnRemoveAI" style="width:100%;margin-bottom:8px;display:none;border-color:#c04040;color:#c04040;">Arka Planı Kaldır</button>
+
+       <hr style="border:0;border-top:1px solid rgba(255,255,255,0.1);margin:15px 0;">
+
+       <!-- 2D to 3D Modülü -->
+       <div class="pp-section">🖼️ 2D'den 3D'ye Çevir</div>
+       <div style="font-size:10px;color:var(--text-dim);margin-bottom:10px;">Şeffaf arka planlı (PNG) bir ürün resmi yükleyin, yapay zeka onu anında 3D modele dönüştürüp sahneye eklesin.</div>
+       
+       <input type="file" id="ai3dFileInput" accept="image/png, image/jpeg, image/webp" style="display:none">
+       <button class="scene-btn" id="btnSelectAI3D" style="width:100%;margin-bottom:8px;background:rgba(255,255,255,.05);border-style:dashed;">📁 Resim Seç (PNG/JPG)</button>
+       
+       <div id="ai3dPreviewContainer" style="display:none; text-align:center; margin-bottom:8px;">
+          <img id="ai3dPreviewImg" style="max-width:100%; max-height:100px; border-radius:4px; border:1px solid var(--panel-border);">
+       </div>
+
+       <button class="scene-btn" id="btnGenerateAI3D" style="width:100%;margin-bottom:8px;background:rgba(47, 212, 145, 0.15);border-color:#2fd491;color:#2fd491;display:none;">🚀 3D'ye Dönüştür</button>
+       
+       <div id="ai3dProgress" style="font-size:10px;color:#2fd491;text-align:center;display:none;margin-bottom:8px;padding:8px;border:1px dashed #2fd491;border-radius:4px;background:rgba(47,212,145,0.05);">
+         <div id="ai3dStatusText" style="margin-bottom:4px;font-weight:bold;font-size:11px;">Kuyruğa giriliyor...</div>
+         <div id="ai3dStatusDetail" style="opacity:0.8;">Lütfen bekleyin</div>
+         <div style="width:100%; height:4px; background:rgba(255,255,255,0.1); border-radius:2px; margin-top:6px; overflow:hidden;">
+            <div id="ai3dProgressBar" style="width:0%; height:100%; background:#2fd491; transition:width 0.3s ease;"></div>
+         </div>
+       </div>
+
     </div>
 
     <!-- TAB: POST -->
@@ -6016,6 +6040,165 @@ if(btnRemoveAI) {
     // Restore physical backgrounds if needed
     if(typeof bw !== 'undefined' && bw && document.getElementById('envModeSel') && document.getElementById('envModeSel').value === 'studio') bw.visible = true;
     if(typeof sweepMesh !== 'undefined' && sweepMesh && document.getElementById('envModeSel') && document.getElementById('envModeSel').value === 'sweep') sweepMesh.visible = true;
+  });
+}
+// 2. 2D'DEN 3D'YE ÇEVİRİ (Hunyuan3D)
+const btnSelectAI3D = document.getElementById('btnSelectAI3D');
+const ai3dFileInput = document.getElementById('ai3dFileInput');
+const ai3dPreviewContainer = document.getElementById('ai3dPreviewContainer');
+const ai3dPreviewImg = document.getElementById('ai3dPreviewImg');
+const btnGenerateAI3D = document.getElementById('btnGenerateAI3D');
+const ai3dProgress = document.getElementById('ai3dProgress');
+const ai3dStatusText = document.getElementById('ai3dStatusText');
+const ai3dStatusDetail = document.getElementById('ai3dStatusDetail');
+const ai3dProgressBar = document.getElementById('ai3dProgressBar');
+
+if(btnSelectAI3D) {
+  btnSelectAI3D.addEventListener('click', () => ai3dFileInput.click());
+  
+  ai3dFileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if(!file) return;
+    const url = URL.createObjectURL(file);
+    ai3dPreviewImg.src = url;
+    ai3dPreviewContainer.style.display = 'block';
+    btnGenerateAI3D.style.display = 'block';
+    btnSelectAI3D.style.display = 'none';
+  });
+
+  btnGenerateAI3D.addEventListener('click', async () => {
+    const file = ai3dFileInput.files[0];
+    if(!file) return;
+
+    btnGenerateAI3D.style.display = 'none';
+    ai3dProgress.style.display = 'block';
+    ai3dStatusText.innerText = 'Yapay zeka sunucusuna bağlanılıyor...';
+    ai3dStatusDetail.innerText = 'Tencent Hunyuan3D (HuggingFace)';
+    ai3dProgressBar.style.width = '10%';
+
+    try {
+      // Adım 1: Modülü yükle
+      let client;
+      try {
+        ai3dStatusText.innerText = 'Gerekli kütüphaneler indiriliyor...';
+        const module = await import("https://cdn.jsdelivr.net/npm/@gradio/client@1.4.0/dist/index.min.js");
+        client = module.client;
+      } catch (e) {
+        throw new Error("Kütüphane yüklenemedi (Tarayıcı güvenlik duvarı veya reklam engelleyici sebep olabilir). " + e.message);
+      }
+      
+      ai3dStatusText.innerText = 'Sunucuya bağlanılıyor (HuggingFace)...';
+      ai3dProgressBar.style.width = '20%';
+
+      // Adım 2: Sunucuya bağlan
+      let app;
+      try {
+        app = await client("https://tencent-hunyuan3d-2.hf.space/");
+      } catch (e) {
+        throw new Error("HuggingFace sunucusuna bağlantı reddedildi. " + e.message);
+      }
+      
+      ai3dStatusText.innerText = 'Bağlantı başarılı, model işleniyor!';
+      
+      // Tahmin işlemini başlat (Sıraya girer)
+      const submission = app.submit("/image_to_3d", [
+        file,
+        true, // remove background
+        30    // steps
+      ]);
+
+      for await (const msg of submission) {
+        if (msg.type === "status") {
+          const stage = msg.stage || "Bekleniyor";
+          const q = msg.queue_position ? ` (Sıranız: ${msg.queue_position})` : "";
+          
+          if (stage === "pending") {
+            ai3dStatusText.innerText = `Kuyrukta bekleniyor...${q}`;
+            ai3dProgressBar.style.width = '30%';
+          } else if (stage === "generating" || stage === "processing") {
+            ai3dStatusText.innerText = 'Yapay zeka modeli üretiyor...';
+            ai3dStatusDetail.innerText = 'Bu işlem yaklaşık 1-3 dakika sürebilir.';
+            ai3dProgressBar.style.width = '70%';
+          }
+        }
+        
+        if (msg.type === "data") {
+          ai3dStatusText.innerText = 'Model başarıyla üretildi! İndiriliyor...';
+          ai3dProgressBar.style.width = '90%';
+          
+          const outputData = msg.data;
+          
+          let glbUrl = null;
+          const findUrl = (obj) => {
+            if(!obj) return null;
+            if(typeof obj === 'string' && (obj.endsWith('.glb') || obj.endsWith('.obj'))) return obj;
+            if(obj.url && (obj.url.endsWith('.glb') || obj.url.endsWith('.obj'))) return obj.url;
+            if(Array.isArray(obj)) {
+              for(let i=0; i<obj.length; i++) {
+                const res = findUrl(obj[i]);
+                if(res) return res;
+              }
+            }
+            if(typeof obj === 'object') {
+              for(let key in obj) {
+                const res = findUrl(obj[key]);
+                if(res) return res;
+              }
+            }
+            return null;
+          };
+          
+          glbUrl = findUrl(outputData);
+
+          if (glbUrl) {
+            // İndir ve sahneye ekle
+            const gltfLoader = new THREE.GLTFLoader();
+            gltfLoader.load(glbUrl, (gltf) => {
+              const model = gltf.scene;
+              model.position.set(0, 0, 0); 
+              
+              const box = new THREE.Box3().setFromObject(model);
+              const center = box.getCenter(new THREE.Vector3());
+              const size = box.getSize(new THREE.Vector3());
+              const maxDim = Math.max(size.x, size.y, size.z);
+              const scale = 5 / maxDim;
+              
+              model.scale.setScalar(scale);
+              model.position.sub(center.multiplyScalar(scale));
+              model.position.y += (size.y * scale) / 2;
+              
+              model.traverse(n => {
+                if(n.isMesh) {
+                  n.castShadow = true;
+                  n.receiveShadow = true;
+                }
+              });
+              
+              mainProductWrapper.add(model);
+              
+              ai3dStatusText.innerText = 'Model sahneye eklendi!';
+              ai3dProgressBar.style.width = '100%';
+              if(typeof toast === 'function') toast("3D Model başarıyla yüklendi! 🎉");
+              
+              setTimeout(() => {
+                ai3dProgress.style.display = 'none';
+                btnSelectAI3D.style.display = 'block';
+                ai3dPreviewContainer.style.display = 'none';
+              }, 3000);
+            });
+          } else {
+             throw new Error("Desteklenen model formatı (GLB/OBJ) bulunamadı.");
+          }
+        }
+      }
+    } catch (err) {
+      console.error("AI 3D Hata:", err);
+      ai3dStatusText.innerText = 'Bir hata oluştu!';
+      ai3dStatusDetail.innerText = err.message;
+      ai3dStatusText.style.color = 'red';
+      ai3dProgressBar.style.background = 'red';
+      btnGenerateAI3D.style.display = 'block';
+    }
   });
 }
 
