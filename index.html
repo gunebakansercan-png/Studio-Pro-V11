@@ -41,8 +41,25 @@ html,body{margin:0;height:100%;background:var(--bg);overflow:hidden;font-family:
 .lang-select{background:rgba(30,28,32,0.8);color:#ddd;border:1px solid rgba(255,255,255,0.15);border-radius:4px;padding:3px 6px;font-size:11px;outline:none;cursor:pointer;font-weight:600;}
 .lang-select option{background:#222;color:#fff;}
 
-/* ── TOP TOOLBAR ── */
-#topToolbar{position:fixed;top:12px;left:calc(50% + 120px);transform:translateX(-50%);z-index:20;display:flex;align-items:center;gap:4px;background:rgba(28,26,29,.92);backdrop-filter:blur(14px);border:1px solid var(--panel-border);border-radius:999px;padding:4px 6px;}
+/* ── TOP TOOLBAR (UNIFIED CENTER BAR) ── */
+#topToolbar {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(28,26,29,.92);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--panel-border);
+  border-radius: 999px;
+  padding: 4px 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.35);
+  white-space: nowrap;
+}
 .tb-btn{width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:none;border:none;color:var(--text-dim);font-size:13px;cursor:pointer;border-radius:50%;transition:background .12s,color .12s;}
 .tb-btn:hover{background:rgba(255,255,255,.1);color:var(--text);}
 .tb-btn:disabled{opacity:.3;cursor:default;}
@@ -50,7 +67,7 @@ html,body{margin:0;height:100%;background:var(--bg);overflow:hidden;font-family:
 .tb-sep{width:1px;height:16px;background:var(--panel-border);margin:0 2px;}
 
 /* ── SOL PANEL ── */
-#productPanel{position:fixed;top:56px;left:12px;z-index:7;width:228px;background:rgba(28,26,29,.97);backdrop-filter:blur(18px);border:1px solid var(--panel-border);border-radius:var(--radius);overflow:hidden;transition:width .25s ease;}
+#productPanel{position:fixed;top:56px;left:12px;z-index:7;width:228px;background:rgba(14,12,16,.52);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:1px solid rgba(255,255,255,.1);border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.4);overflow:hidden;transition:width .25s ease;}
 #productPanel.collapsed{width:40px;}
 #productPanel.collapsed .pp-tabs,#productPanel.collapsed .pp-body,#productPanel.collapsed .pp-title-text{display:none;}
 .pp-header{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-bottom:1px solid var(--panel-border);cursor:pointer;user-select:none;}
@@ -215,20 +232,32 @@ input[type=color]{width:26px;height:20px;border:1px solid var(--panel-border);bo
 .mini-switch input:checked+.mini-sl{background:var(--amber);}
 .mini-switch input:checked+.mini-sl:before{transform:translateX(13px);background:#1c1a1d;}
 
-/* ── SAĞ PANEL — Işık Detay ── */
-#lightDetailPanel{position:fixed;top:56px;right:0;width:min(32vw,290px);max-height:calc(100vh - 76px);background:rgba(22,20,23,.97);backdrop-filter:blur(20px);border-left:1px solid var(--panel-border);border-radius:var(--radius) 0 0 var(--radius);z-index:8;display:none;flex-direction:column;overflow:hidden;}
-/* ── SAĞ PANEL — Işık Detay (alt yarı) ── */
-#lightDetailPanel{position:fixed;top:56px;right:0;width:min(32vw,290px);height:calc(50vh - 38px);background:rgba(22,20,23,.97);backdrop-filter:blur(20px);border-left:1px solid var(--panel-border);border-bottom:1px solid var(--panel-border);border-radius:var(--radius) 0 0 0;z-index:8;display:none;flex-direction:column;overflow:hidden;}
-#lightDetailPanel.visible{display:flex;}
-/* SAĞ PANEL — Obje Katmanları (alt yarı) */
-#propLayerPanel{position:fixed;top:calc(50vh + 20px);right:0;width:min(32vw,290px);height:calc(50vh - 76px);background:rgba(20,18,22,.97);backdrop-filter:blur(20px);border-left:1px solid var(--panel-border);border-top:1px solid rgba(255,255,255,.1);border-radius:0 0 0 var(--radius);z-index:8;display:none;flex-direction:column;overflow:hidden;}
-#propLayerPanel.visible{display:flex;}
-#diagramPanel{position:fixed;top:calc(50vh - 150px);right:0;width:min(35vw,320px);height:auto;padding-bottom:10px;background:rgba(20,18,22,.97);backdrop-filter:blur(20px);border-left:1px solid var(--panel-border);border-top:1px solid rgba(255,255,255,.1);border-radius:var(--radius) 0 0 var(--radius);z-index:8;display:none;flex-direction:column;overflow:hidden;}
-#diagramPanel.visible{display:flex;}
+/* ── SAĞ PANELLER (Floating Glass Panels) ── */
+#lightDetailPanel, #propLayerPanel, #diagramPanel {
+  position: fixed;
+  top: 56px;
+  right: 36px;
+  z-index: 9;
+  background: rgba(14, 12, 16, 0.52);
+  backdrop-filter: blur(22px) saturate(180%);
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  box-shadow: 0 8px 36px rgba(0, 0, 0, 0.45);
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+  max-height: calc(100vh - 76px);
+}
+#lightDetailPanel { width: min(32vw, 290px); }
+#propLayerPanel { width: min(32vw, 290px); }
+#diagramPanel { width: min(35vw, 320px); }
+#lightDetailPanel.visible, #propLayerPanel.visible, #diagramPanel.visible { display: flex; }
+
 /* Ortak panel toggle butonları */
-.rpanel-toggle{position:fixed;right:0;z-index:9;width:28px;padding:7px 0;background:rgba(22,20,23,.9);border:1px solid var(--panel-border);border-right:none;border-radius:7px 0 0 7px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:11px;writing-mode:vertical-lr;color:var(--text-dim);letter-spacing:1px;transition:background .15s,color .15s;}
-.rpanel-toggle:hover{background:rgba(212,145,47,.15);color:var(--amber);}
-.rpanel-toggle.active{background:rgba(212,145,47,.12);color:var(--amber);border-color:var(--amber);}
+.rpanel-toggle{position:fixed;right:0;z-index:10;width:28px;padding:8px 0;background:rgba(22,20,23,.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.12);border-right:none;border-radius:8px 0 0 8px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:10.5px;writing-mode:vertical-lr;color:var(--text-dim);letter-spacing:1px;box-shadow:-2px 4px 12px rgba(0,0,0,.3);transition:all .15s ease;}
+.rpanel-toggle:hover{background:rgba(212,145,47,.18);color:#fff;border-color:rgba(212,145,47,.4);}
+.rpanel-toggle.active{background:rgba(212,145,47,.22);color:var(--amber);border-color:var(--amber);box-shadow:-2px 0 14px rgba(212,145,47,.3);}
 #toggleLDP{top:calc(50vh - 130px);}
 #toggleDiag{top:calc(50vh - 14px);}
 #togglePLP{top:calc(50vh + 102px);}
@@ -278,18 +307,24 @@ input[type=color]{width:26px;height:20px;border:1px solid var(--panel-border);bo
 .ldp-reset:hover{border-color:var(--amber);color:var(--amber);}
 
 /* ── ALT SHEET ── */
-.bottom-sheet{position:fixed;left:0;right:0;bottom:0;z-index:6;background:rgba(18,16,19,.75);backdrop-filter:blur(24px);border-top:1px solid rgba(255,255,255,.07);transition:transform .3s cubic-bezier(.4,0,.2,1);}
+.bottom-sheet{position:fixed;left:0;right:0;bottom:0;z-index:6;max-height:33.33vh;background:rgba(14,12,16,.42);backdrop-filter:blur(22px) saturate(180%);-webkit-backdrop-filter:blur(22px) saturate(180%);border-top:1px solid rgba(255,255,255,.12);border-radius:16px 16px 0 0;box-shadow:0 -10px 40px rgba(0,0,0,.45);display:flex;flex-direction:column;overflow:hidden;transition:transform .3s cubic-bezier(.4,0,.2,1);}
 .bottom-sheet.collapsed{transform:translateY(calc(100% - 28px));}
-.sheet-pull{width:100%;display:flex;align-items:center;justify-content:center;padding:5px 0 3px;cursor:pointer;user-select:none;gap:8px;}
-.sheet-pull-bar{width:36px;height:4px;background:rgba(255,255,255,.15);border-radius:2px;}
-.sheet-pull-arrow{font-size:10px;color:rgba(255,255,255,.3);transition:transform .3s;}
+.sheet-pull{width:100%;display:flex;align-items:center;justify-content:center;padding:6px 0 4px;cursor:pointer;user-select:none;gap:8px;background:rgba(255,255,255,.02);}
+.sheet-pull-bar{width:42px;height:4px;background:rgba(255,255,255,.22);border-radius:999px;box-shadow:0 0 6px rgba(255,255,255,.2);}
+.sheet-pull-arrow{font-size:10px;color:rgba(255,255,255,.4);transition:transform .3s;}
 .bottom-sheet.collapsed .sheet-pull-arrow{transform:rotate(180deg);}
-.sheet-tabs{display:flex;border-bottom:1px solid rgba(255,255,255,.06);}
-.sheet-tab{flex:1;padding:7px 6px;font-size:10px;font-weight:600;text-align:center;cursor:pointer;color:rgba(255,255,255,.35);background:none;border:none;letter-spacing:.3px;transition:color .12s;}
-.sheet-tab:hover{color:rgba(255,255,255,.6);}
-.sheet-tab.active{color:var(--amber);}
-.sheet-pane{display:none;}
+.sheet-tabs{display:flex;border-bottom:1px solid rgba(255,255,255,.08);background:rgba(0,0,0,.15);}
+.sheet-tab{flex:1;padding:8px 6px;font-size:10px;font-weight:650;text-align:center;cursor:pointer;color:rgba(255,255,255,.45);background:none;border:none;letter-spacing:.4px;transition:all .15s;}
+.sheet-tab:hover{color:rgba(255,255,255,.8);background:rgba(255,255,255,.03);}
+.sheet-tab.active{color:var(--amber);background:rgba(212,145,47,.12);border-bottom:2px solid var(--amber);}
+.sheet-pane{display:none;max-height:calc(33.33vh - 55px);overflow-y:auto;}
 .sheet-pane.active{display:block;}
+
+/* Custom Sleek Scrollbars */
+.sheet-pane::-webkit-scrollbar, .pp-body::-webkit-scrollbar, .ldp-body::-webkit-scrollbar, .plp-body::-webkit-scrollbar, .cards-row::-webkit-scrollbar { width: 4px; height: 4px; }
+.sheet-pane::-webkit-scrollbar-track, .pp-body::-webkit-scrollbar-track, .ldp-body::-webkit-scrollbar-track, .plp-body::-webkit-scrollbar-track, .cards-row::-webkit-scrollbar-track { background: transparent; }
+.sheet-pane::-webkit-scrollbar-thumb, .pp-body::-webkit-scrollbar-thumb, .ldp-body::-webkit-scrollbar-thumb, .plp-body::-webkit-scrollbar-thumb, .cards-row::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.18); border-radius: 4px; }
+.sheet-pane::-webkit-scrollbar-thumb:hover, .pp-body::-webkit-scrollbar-thumb:hover, .cards-row::-webkit-scrollbar-thumb:hover { background: var(--amber); }
 
 /* Industry Presets */
 .ind-strip{display:flex;gap:5px;padding:7px 12px;border-bottom:1px solid rgba(255,255,255,.06);overflow-x:auto;}
@@ -301,9 +336,9 @@ input[type=color]{width:26px;height:20px;border:1px solid var(--panel-border);bo
 .cards-row{display:flex;gap:10px;padding:6px 12px 4px;overflow-x:auto;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity;align-items:stretch;}
 .add-card{flex:0 0 52px;min-height:88px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;background:transparent;border:1.5px dashed rgba(255,255,255,.12);border-radius:var(--radius);cursor:pointer;color:var(--text-dim);font-size:11px;transition:border-color .15s,color .15s;scroll-snap-align:start;}
 .add-card:hover{border-color:var(--amber);color:var(--amber);}
-.light-card{flex:0 0 200px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.08);border-radius:var(--radius);padding:9px 11px 10px;scroll-snap-align:start;cursor:pointer;transition:border-color .15s,background .15s;}
-.light-card:hover{background:rgba(255,255,255,.08);}
-.light-card.active{border-color:var(--amber);background:rgba(212,145,47,.08);}
+.light-card{flex:0 0 200px;background:rgba(255,255,255,.04);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:9px 11px 10px;scroll-snap-align:start;cursor:pointer;transition:all .18s ease;}
+.light-card:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);transform:translateY(-2px);}
+.light-card.active{border-color:var(--amber);background:rgba(212,145,47,.12);box-shadow:0 4px 18px rgba(212,145,47,.15);}
 .light-card-head{display:flex;align-items:center;gap:8px;}
 .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;box-shadow:0 0 6px 1px currentColor;}
 .light-name{font-size:12px;font-weight:650;flex:1;background:none;border:none;color:var(--text);padding:0;cursor:text;outline:none;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -377,10 +412,92 @@ input[type=color]{width:26px;height:20px;border:1px solid var(--panel-border);bo
 .beam-toggle input{accent-color:var(--amber);width:15px;height:15px;}
 
 /* Shot */
-#topControlsWrap{position:fixed;top:14px;right:calc(50% + 80px);z-index:10;display:flex;gap:8px;}
-#hideEquipBtn, #resetPosBtn{background:rgba(28,26,29,.92);backdrop-filter:blur(12px);border:1px solid var(--panel-border);border-radius:999px;padding:7px 16px;font-size:11px;color:var(--text-dim);cursor:pointer;display:flex;align-items:center;gap:7px;transition:border-color .15s,color .15s;white-space:nowrap;}
-#hideEquipBtn:hover, #resetPosBtn:hover{border-color:var(--amber-soft);color:var(--text);}
-#hideEquipBtn.active{border-color:var(--amber);color:var(--amber);}
+#hideEquipBtn, #resetPosBtn, #gridOverlayBtn, #clayModeBtn {
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 10.5px;
+  color: var(--text-dim);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: all .15s ease;
+  white-space: nowrap;
+}
+#hideEquipBtn:hover, #resetPosBtn:hover, #gridOverlayBtn:hover, #clayModeBtn:hover {
+  border-color: var(--amber-soft);
+  color: var(--text);
+  background: rgba(255,255,255,.1);
+}
+#hideEquipBtn.active, #gridOverlayBtn.active, #clayModeBtn.active {
+  border-color: var(--amber);
+  color: var(--amber);
+  background: rgba(212,145,47,.18);
+}
+
+/* Grid & Camera Viewfinder Overlay - Bold Black Contrast */
+#gridOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .25s ease-in-out;
+}
+#gridOverlay.visible {
+  opacity: 1;
+}
+.grid-v1, .grid-v2 {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  border-left: 2px dashed rgba(0, 0, 0, 0.85);
+}
+.grid-v1 { left: 33.333%; }
+.grid-v2 { left: 66.666%; }
+
+.grid-h1, .grid-h2 {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  border-top: 2px dashed rgba(0, 0, 0, 0.85);
+}
+.grid-h1 { top: 33.333%; }
+.grid-h2 { top: 66.666%; }
+
+.crosshair-target {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 40px;
+  border: 2.5px solid rgba(0, 0, 0, 0.9);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #000000;
+  font-size: 20px;
+  font-weight: 700;
+  text-shadow: 0 0 3px rgba(255, 255, 255, 0.9);
+}
+
+.crop-corner {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  border-color: rgba(0, 0, 0, 0.9);
+  border-style: solid;
+}
+.crop-corner.tl { top: 24px; left: 24px; border-width: 3px 0 0 3px; }
+.crop-corner.tr { top: 24px; right: 24px; border-width: 3px 3px 0 0; }
+.crop-corner.bl { bottom: 24px; left: 24px; border-width: 0 0 3px 3px; }
+.crop-corner.br { bottom: 24px; right: 24px; border-width: 0 3px 3px 0; }
 #shotWrap{position:fixed;bottom:calc(env(safe-area-inset-bottom)+10px);right:14px;z-index:10;display:flex;align-items:center;gap:7px;}
 #qualitySelect{background:rgba(28,26,29,.92);backdrop-filter:blur(12px);border:1px solid var(--panel-border);border-radius:999px;padding:8px 12px;font-size:10px;color:var(--text-dim);cursor:pointer;outline:none;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3e%3cpath fill='%239a948c' d='M3 4.5l3 3 3-3'/%3e%3c/svg%3e");background-repeat:no-repeat;background-position:right 9px center;background-size:10px;padding-right:26px;}
 #shotBtn{background:var(--amber);color:#111;border:none;border-radius:999px;padding:9px 16px;font-size:11px;font-weight:700;letter-spacing:.3px;cursor:pointer;display:flex;align-items:center;gap:6px;box-shadow:0 2px 16px rgba(212,145,47,.35);transition:background .15s,transform .1s,box-shadow .15s;white-space:nowrap;}
@@ -590,29 +707,15 @@ body.ar-mode #toast {
   <button id="comparisonCloseBtn">✕ Kapat</button>
 </div>
 
-<div class="header">
-  <h1 id="titleEl" style="font-size:22px; margin:0; font-weight:700; letter-spacing:0.5px;">Studio Pro V11</h1>
-  <button id="pathTracerToggle" style="margin-left:20px; padding:6px 12px; background:rgba(212,145,47,0.2); border:1px solid #d4912f; color:#d4912f; border-radius:6px; cursor:pointer; font-weight:bold; font-size:11px;">✨ Işın İzleme (KAPALI)</button>
+<!-- Social Media Mockup Overlay -->
+<div id="wowSocialOverlay" style="display:none; position:fixed; pointer-events:none; z-index:90; border:2px dashed #ff416c; border-radius:14px; box-shadow:0 0 35px rgba(255,65,108,0.4); transition:all 0.3s ease;">
+  <div id="wowSocialBadgeTitle" style="position:absolute; top:18px; left:22px; font-weight:bold; font-size:20px; color:#fff; text-shadow:0 2px 10px rgba(0,0,0,0.9); letter-spacing:1px; font-family:sans-serif;">PRO PRODUCT</div>
+  <div id="wowSocialBadgeTag" style="position:absolute; bottom:22px; right:22px; background:linear-gradient(135deg,#ff416c,#ff4b2b); padding:6px 16px; border-radius:20px; font-weight:bold; font-size:12px; color:#fff; box-shadow:0 4px 15px rgba(255,75,43,0.5); font-family:sans-serif;">★ TOP QUALITY ★</div>
 </div>
 
-<!-- Top Toolbar -->
-<div id="topToolbar">
-  <button class="tb-btn" id="btnUndo" title="Geri Al (Ctrl+Z)" disabled>↩</button>
-  <button class="tb-btn" id="btnRedo" title="İleri Al (Ctrl+Y)" disabled>↪</button>
-  <div class="tb-sep"></div>
-  <button class="tb-btn" id="btnSave" title="Sahneyi Kaydet">💾</button>
-  <button class="tb-btn" id="btnLoad" title="Sahne Yükle">📂</button>
-  <input type="file" id="sceneFileInput" accept=".json" style="display:none"/>
-  <div class="tb-sep"></div>
-  <button class="tb-btn" id="btnShare" title="URL ile Paylaş">🔗</button>
-  <button class="tb-btn" id="btnCompare" title="Karşılaştırma Modu">🔀</button>
-  <div class="tb-sep"></div>
-  <button class="tb-btn" id="btnDayNight" title="Gece/Gündüz Modu">☀️</button>
-  <button class="tb-btn" id="btnLightMode" title="Önizleme Işığı">💡</button>
-  <button class="tb-btn" id="btnRefMatch" title="Referans Görsel Eşleştir">🔍</button>
-  <button class="tb-btn" id="btnFPS" title="Performans Sayacı">📊</button>
-  <div class="tb-sep"></div>
-  
+<div class="header">
+  <h1 id="titleEl" style="font-size:20px; margin:0; font-weight:700; letter-spacing:0.5px;">Studio Pro V11</h1>
+  <button id="pathTracerToggle" style="margin-left:12px; padding:6px 12px; background:rgba(212,145,47,0.2); border:1px solid #d4912f; color:#d4912f; border-radius:6px; cursor:pointer; font-weight:bold; font-size:11px; white-space:nowrap;">✨ Işın İzleme (KAPALI)</button>
 </div>
 
 <!-- Sol Panel -->
@@ -623,6 +726,7 @@ body.ar-mode #toast {
     <button class="pp-tab" data-tab="scene">🌍 Sahne</button>
     <button class="pp-tab" data-tab="ai">🤖 Y. Zeka</button>
     <button class="pp-tab" data-tab="post">🎨 Post</button>
+    <button class="pp-tab" data-tab="wow" style="background: linear-gradient(135deg, #ff416c, #ff4b2b); color: #fff; border-color: transparent; font-weight: bold;">✨ Wow</button>
   </div>
   <div class="pp-body">
 
@@ -679,12 +783,22 @@ body.ar-mode #toast {
             <div id="mdTextureControls" style="display:none; margin-top:5px;">
               <div class="fine-row"><div class="fine-label"><span>UV Ölçek</span><span class="fine-val" id="vMdTexScale">1.0</span></div><input type="range" id="ctrlMdTexScale" min="0.1" max="5" step="0.1" value="1"></div>
             </div>
-            <div class="md-section">İnce Ayar</div>
+            <div class="texture-row" style="margin-top:6px;">
+               <span class="texture-label">Bump / Normal Map</span>
+               <button class="texture-btn" id="mdNormalBtn" style="padding:2px 8px;font-size:10px;">📂 Yükle</button>
+               <input type="file" id="mdNormalInput" accept="image/*" style="display:none">
+             </div>
+             <div id="mdNormalControls" style="display:none; margin-top:4px;">
+               <div class="fine-row"><div class="fine-label"><span>Kabartma Gücü</span><span class="fine-val" id="vMdNormalScale">1.0</span></div><input type="range" id="ctrlMdNormalScale" min="0" max="3" step="0.1" value="1"></div>
+             </div>
+             <div class="md-section">İnce Ayar</div>
             <div class="fine-row"><div class="fine-label"><span>Pürüzlülük</span><span class="fine-val" id="vMdRoughness">0.50</span></div><input type="range" id="ctrlMdRoughness" min="0" max="1" step="0.01" value="0.5"></div>
             <div class="fine-row"><div class="fine-label"><span>Metalik</span><span class="fine-val" id="vMdMetalness">0.00</span></div><input type="range" id="ctrlMdMetalness" min="0" max="1" step="0.01" value="0"></div>
             <div class="fine-row"><div class="fine-label"><span>Clearcoat</span><span class="fine-val" id="vMdClearcoat">0.00</span></div><input type="range" id="ctrlMdClearcoat" min="0" max="1" step="0.01" value="0"></div>
             <div class="fine-row"><div class="fine-label"><span>Şeffaflık</span><span class="fine-val" id="vMdOpacity">1.00</span></div><input type="range" id="ctrlMdOpacity" min="0.05" max="1" step="0.01" value="1"></div>
             <div class="fine-row"><div class="fine-label"><span>Cam Geçirgenliği</span><span class="fine-val" id="vMdTransmission">0.00</span></div><input type="range" id="ctrlMdTransmission" min="0" max="1" step="0.01" value="0"></div>
+            <div class="color-pick-row" style="margin-top:4px;"><span class="color-pick-label">Sıvı/Hacim Rengi</span><input type="color" id="ctrlMdAttenColor" value="#ffffff"/></div>
+            <div class="fine-row"><div class="fine-label"><span>Hacimsel Erim</span><span class="fine-val" id="vMdAttenDist">1.00</span></div><input type="range" id="ctrlMdAttenDist" min="0.05" max="5" step="0.05" value="1"></div>
             <div class="fine-row"><div class="fine-label"><span>Kırılma (IOR)</span><span class="fine-val" id="vMdIor">1.50</span></div><input type="range" id="ctrlMdIor" min="1" max="2.33" step="0.01" value="1.5"></div>
             <div class="fine-row"><div class="fine-label"><span>Renk Ayrışması</span><span class="fine-val" id="vMdDispersion">0.00</span></div><input type="range" id="ctrlMdDispersion" min="0" max="5" step="0.1" value="0"></div>
             <div class="md-section">🔧 Dönüşüm (Transform)</div>
@@ -860,14 +974,15 @@ body.ar-mode #toast {
       </div>
       <div class="color-pick-row"><span class="color-pick-label">Sweep rengi</span><input type="color" id="sweepColorPick" value="#a0a0a0"/></div>
 
-      <div class="scene-section">Gradient Arka Plan</div>
-      <div class="grad-row"><span class="color-pick-label">Üst renk</span><input type="color" id="gradTop" value="#1a0a2e"/></div>
-      <div class="grad-row"><span class="color-pick-label">Alt renk</span><input type="color" id="gradBot" value="#0a1a4e"/></div>
-      <div class="grad-btns">
-        <button class="scene-btn" id="gradApplyV" style="flex:1;">↕ Dikey</button>
-        <button class="scene-btn" id="gradApplyH" style="flex:1;">↔ Yatay</button>
-        <button class="scene-btn" id="gradClear" style="flex:0 0 auto;">✕</button>
+      <div class="scene-section">🌅 Fiziksel Güneş & Gökyüzü</div>
+      <div class="post-toggle-row"><span class="post-toggle-label">Güneş Simülasyonu</span><label class="mini-switch"><input type="checkbox" id="skyToggle"><span class="mini-sl"></span></label></div>
+      <div id="skyControls" style="opacity:.3;pointer-events:none;">
+        <div class="fine-row" style="margin-bottom:6px;"><div class="fine-label"><span>Güneş Yüksekliği (Açı)</span><span class="fine-val" id="vSunElevation">25°</span></div><input type="range" id="ctrlSunElevation" min="0" max="90" step="1" value="25"></div>
+        <div class="fine-row" style="margin-bottom:6px;"><div class="fine-label"><span>Güneş Yönü (Azimut)</span><span class="fine-val" id="vSunAzimuth">180°</span></div><input type="range" id="ctrlSunAzimuth" min="0" max="360" step="1" value="180"></div>
+        <div class="fine-row" style="margin-bottom:6px;"><div class="fine-label"><span>Atmosfer Pusluluğu</span><span class="fine-val" id="vSkyTurbidity">2.0</span></div><input type="range" id="ctrlSkyTurbidity" min="1" max="10" step="0.1" value="2"></div>
       </div>
+
+
 
       <div class="scene-section">Arka Plan Görseli</div>
       <div class="bg-img-zone" id="bgImgZone"><div class="drop-icon">🖼</div><div class="drop-label"><strong>Resim sürükle</strong> veya tıkla</div><div class="drop-formats">JPG · PNG · WEBP</div></div>
@@ -919,6 +1034,10 @@ body.ar-mode #toast {
         <button class="scene-btn" data-floor="colored">Renkli</button>
       </div>
       <div class="color-pick-row" id="floorColorRow"><span class="color-pick-label">Zemin rengi</span><input type="color" id="floorColorPick" value="#e9e5db"/></div>
+      <div class="fine-row" style="margin-top:6px;margin-bottom:6px;">
+        <div class="fine-label"><span>Zemin Pürüzlülüğü</span><span class="fine-val" id="vFloorRoughness">1.00</span></div>
+        <input type="range" id="ctrlFloorRoughness" min="0" max="1" step="0.01" value="1">
+      </div>
       <div class="fine-row" id="mirrorRow" style="display:none;margin-bottom:8px;">
         <div class="fine-label"><span>Yansıma Yoğunluğu</span><span class="fine-val" id="vMirrorBlur">0.05</span></div>
         <input type="range" id="ctrlMirrorBlur" min="0" max="0.5" step="0.01" value="0.05">
@@ -944,6 +1063,14 @@ body.ar-mode #toast {
           <div class="fine-label"><span>IBL Yoğunluğu</span><span class="fine-val" id="vHdriInt">1.0</span></div>
           <input type="range" id="ctrlHdriInt" min="0" max="3" step="0.05" value="1">
         </div>
+        <div class="fine-row" style="margin-bottom:6px;">
+          <div class="fine-label"><span>🔄 HDRI Döndürme</span><span class="fine-val" id="vHdriRot">0°</span></div>
+          <input type="range" id="ctrlHdriRot" min="0" max="360" step="1" value="0">
+        </div>
+        <div class="fine-row" style="margin-bottom:6px;">
+          <div class="fine-label"><span>🌫 Arka Plan Fluluğu</span><span class="fine-val" id="vHdriBlur">0.00</span></div>
+          <input type="range" id="ctrlHdriBlur" min="0" max="1" step="0.05" value="0">
+        </div>
         <button class="scene-btn" id="hdriFileBtn" style="width:100%;margin-bottom:8px;min-width:auto;">📁 .HDR Dosyası Yükle</button>
         <div class="post-toggle-row" id="hdriBgToggleRow" style="display:none;margin-bottom:8px;">
           <span class="post-toggle-label">Arka Planda Göster</span>
@@ -952,9 +1079,7 @@ body.ar-mode #toast {
         <input type="file" id="hdriFileInput" accept=".hdr,.exr" style="display:none"/>
       </div>
 
-      <div class="scene-section">Gölge Rengi</div>
-      <div class="color-pick-row"><span class="color-pick-label">Gölge tonu</span><input type="color" id="shadowColorPick" value="#000000"/></div>
-      <div class="fine-row" style="margin-bottom:8px;"><div class="fine-label"><span>Yoğunluk</span><span class="fine-val" id="vShadowOpacity">0.0</span></div><input type="range" id="ctrlShadowOpacity" min="0" max="0.8" step="0.01" value="0"></div>
+
 
       <div class="scene-section">Sis Efekti</div>
       <div class="post-toggle-row"><span class="post-toggle-label">Sisi Etkinleştir</span><label class="mini-switch"><input type="checkbox" id="fogToggle"><span class="mini-sl"></span></label></div>
@@ -963,19 +1088,7 @@ body.ar-mode #toast {
         <input type="range" id="ctrlFog" min="0.005" max="0.15" step="0.005" value="0.04">
       </div>
 
-      <div class="scene-section">Su / Sıvı Efekti</div>
-      <div class="post-toggle-row"><span class="post-toggle-label">Su Efekti</span><label class="mini-switch"><input type="checkbox" id="waterToggle"><span class="mini-sl"></span></label></div>
-      <div id="waterControls" style="opacity:.3;pointer-events:none;">
-        <div class="fine-row"><div class="fine-label"><span>Genişlik</span><span class="fine-val" id="vWaterDepth">0.3</span></div><input type="range" id="ctrlWaterDepth" min="0.05" max="1.5" step="0.05" value="0.3"></div>
-        <div class="fine-row" style="margin-bottom:4px;"><div class="fine-label"><span>Dalga Hızı</span><span class="fine-val" id="vWaterSpeed">1.0</span></div><input type="range" id="ctrlWaterSpeed" min="0.1" max="4" step="0.1" value="1"></div>
-        <div class="color-pick-row" style="margin-bottom:6px;"><span class="color-pick-label">Su rengi</span><input type="color" id="waterColorPick" value="#6688aa"/></div>
-      </div>
 
-      <div class="scene-section">Buğu / Nem Efekti</div>
-      <div class="post-toggle-row"><span class="post-toggle-label">Nem Efekti</span><label class="mini-switch"><input type="checkbox" id="condToggle"><span class="mini-sl"></span></label></div>
-      <div id="condControls" style="opacity:.3;pointer-events:none;margin-bottom:8px;">
-        <div class="fine-row"><div class="fine-label"><span>Yoğunluk</span><span class="fine-val" id="vCondAmt">0.5</span></div><input type="range" id="ctrlCondAmt" min="0.1" max="1" step="0.05" value="0.5"></div>
-      </div>
 
       <div class="scene-section">Renk Önerisi</div>
       <button class="scene-btn" id="colorPaletteBtn" style="width:100%;margin-bottom:6px;min-width:auto;">🎨 Ürün Renginden Öner</button>
@@ -1077,7 +1190,7 @@ body.ar-mode #toast {
           <input type="number" id="inpPartSpread" min="1.0" max="10.0" step="0.1" style="width:60px; background:#222; border:1px solid #444; color:#fff; padding:2px; border-radius:3px;">
         </div>
         <input type="range" id="ctrlPartSpread" min="1.0" max="5.0" step="0.5" value="1.0" style="width:100%; margin-bottom:4px;">
-        
+
         <div style="font-size:10px; color:rgba(255,255,255,0.3); text-align:center; margin-top:8px; line-height:1.2;">
           * Tarayıcınızda donma/kasma olursa lütfen ayarları düşürün.
         </div>
@@ -1221,6 +1334,143 @@ body.ar-mode #toast {
       
       <button class="ldp-reset" id="btnResetPost" style="margin-top:8px;">↺ Post'u Sıfırla</button>
     </div>
+
+    <!-- TAB: WOW -->
+    <div class="pp-pane" id="pane-wow">
+      <div class="scene-section" style="margin-top:0;">🔄 360° Döner Podyum (Turntable)</div>
+      <div class="post-toggle-row">
+        <span class="post-toggle-label">Podyumu Etkinleştir</span>
+        <label class="mini-switch"><input type="checkbox" id="wowTurntableToggle"><span class="mini-sl"></span></label>
+      </div>
+      <div id="wowTurntableControls" style="opacity:.3;pointer-events:none;">
+        <div class="post-row" style="margin-bottom:6px;">
+          <div class="post-lbl"><span>Dönüş Hızı</span><span class="post-val" id="vWowTtSpeed">1.0</span></div>
+          <input type="range" id="ctrlWowTtSpeed" min="0.1" max="4.0" step="0.1" value="1.0">
+        </div>
+        <div class="post-row" style="margin-bottom:6px;">
+          <div class="post-lbl"><span>Et Kalınlığı / Yükseklik</span><span class="post-val" id="vWowTtHeight">0.60m</span></div>
+          <input type="range" id="ctrlWowTtHeight" min="0.1" max="3.0" step="0.1" value="0.60">
+        </div>
+        <div class="ctrl-row" style="margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;">
+          <div class="ctrl-lbl"><span>Podyum Tipi</span></div>
+          <select id="ctrlWowTtMaterial" class="lang-select" style="width:130px;">
+            <option value="cylinder">Klasik Silindir</option>
+            <option value="gold">Fırçalanmış Altın</option>
+            <option value="glass">Buzlu Cam Disk</option>
+            <option value="marble">Lüks Mermer</option>
+            <option value="neon">Işıklı Neon Ring</option>
+            <option value="wood">Doğal Meşe Ahşap</option>
+            <option value="concrete">Brüt Beton Blok</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="scene-section">🌟 Ürün Işık Halesi & Aurası (Luxury Halo)</div>
+      <div class="post-toggle-row">
+        <span class="post-toggle-label">Işık Halesini Etkinleştir</span>
+        <label class="mini-switch"><input type="checkbox" id="wowHaloToggle"><span class="mini-sl"></span></label>
+      </div>
+      <div id="wowHaloControls" style="opacity:.3;pointer-events:none;">
+        <div class="ctrl-row" style="margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;">
+          <div class="ctrl-lbl"><span>Hale Rengi</span></div>
+          <input type="color" id="ctrlWowHaloColor" value="#ffc87c" style="width:36px;height:24px;border:none;background:none;cursor:pointer;">
+        </div>
+        <div class="post-row" style="margin-bottom:6px;">
+          <div class="post-lbl"><span>Hale Çapı (Boyut)</span><span class="post-val" id="vWowHaloSize">2.0m</span></div>
+          <input type="range" id="ctrlWowHaloSize" min="0.5" max="6.0" step="0.1" value="2.0">
+        </div>
+        <div class="post-row" style="margin-bottom:6px;">
+          <div class="post-lbl"><span>Parlaklık (Yoğunluk)</span><span class="post-val" id="vWowHaloOpacity">0.75</span></div>
+          <input type="range" id="ctrlWowHaloOpacity" min="0.1" max="1.0" step="0.05" value="0.75">
+        </div>
+        <div class="post-row" style="margin-bottom:6px;">
+          <div class="post-lbl"><span>Arka Derinlik</span><span class="post-val" id="vWowHaloDist">0.60m</span></div>
+          <input type="range" id="ctrlWowHaloDist" min="0.1" max="3.0" step="0.05" value="0.60">
+        </div>
+        <div class="post-row" style="margin-bottom:6px;">
+          <div class="post-lbl"><span>Yükseklik (Y-Ekseni)</span><span class="post-val" id="vWowHaloY">1.10m</span></div>
+          <input type="range" id="ctrlWowHaloY" min="0.0" max="3.0" step="0.05" value="1.10">
+        </div>
+      </div>
+
+      <div class="scene-section">📸 Sosyal Medya Şablon Çerçevesi</div>
+      <div class="post-toggle-row">
+        <span class="post-toggle-label">Sosyal Medya Kartı</span>
+        <label class="mini-switch"><input type="checkbox" id="wowSocialToggle"><span class="mini-sl"></span></label>
+      </div>
+      <div id="wowSocialControls" style="opacity:.3;pointer-events:none;">
+        <div class="ctrl-row" style="margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;">
+          <div class="ctrl-lbl"><span>Format</span></div>
+          <select id="ctrlWowSocialFormat" class="lang-select" style="width:130px;">
+            <option value="story">9:16 (Story/Reels)</option>
+            <option value="post">1:1 (Instagram Post)</option>
+            <option value="portrait">4:5 (E-Ticaret Kartı)</option>
+            <option value="banner">16:9 (Web Banner)</option>
+            <option value="magazine">3:4 (Dergi Kapağı)</option>
+          </select>
+        </div>
+        <div class="ctrl-row" style="margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;">
+          <div class="ctrl-lbl"><span>Stil</span></div>
+          <select id="ctrlWowSocialStyle" class="lang-select" style="width:130px;">
+            <option value="neon">Cyberpunk Neon</option>
+            <option value="gold">Lüks Altın</option>
+            <option value="minimal">Minimalist Beyaz</option>
+          </select>
+        </div>
+        <div style="margin-bottom:8px;">
+          <input class="scene-text-input" id="wowSocialTitle" placeholder="Ürün Adı (Örn: Luxe Elixir)" value="PRO PRODUCT" style="width:100%;margin-bottom:4px;"/>
+          <input class="scene-text-input" id="wowSocialPrice" placeholder="Fiyat / Rozet (Örn: $99 / NEW)" value="★ TOP QUALITY ★" style="width:100%;"/>
+        </div>
+        <button class="scene-btn" id="btnWowSocialDownload" style="width:100%;background:linear-gradient(135deg,#ff416c,#ff4b2b);color:#fff;border:none;font-weight:bold;padding:8px;cursor:pointer;border-radius:6px;">📸 Çerçeveli Görseli İndir (JPG)</button>
+      </div>
+
+      <!-- 1. 💎 FİZİKSEL CAM PRİZMA KANALI (DISPERSION) -->
+      <div class="scene-section">💎 Fiziksel Cam Prizma Saçılımı (Dispersion)</div>
+      <div class="post-toggle-row">
+        <span class="post-toggle-label">Prizma Kırılmasını Etkinleştir</span>
+        <label class="mini-switch"><input type="checkbox" id="wowDispersionToggle"><span class="mini-sl"></span></label>
+      </div>
+      <div id="wowDispersionControls" style="opacity:.3;pointer-events:none;">
+        <div class="post-row" style="margin-bottom:6px;">
+          <div class="post-lbl"><span>Prizma Şiddeti (Dispersion)</span><span class="post-val" id="vWowDispersion">0.05</span></div>
+          <input type="range" id="ctrlWowDispersion" min="0.00" max="0.15" step="0.005" value="0.05">
+        </div>
+      </div>
+
+      <!-- 3. ✨ YÜZEY ALTI IŞIK SAÇILIMI (SUBSURFACE SCATTERING - SSS) -->
+      <div class="scene-section">✨ Yüzey Altı Işık Saçılımı (SSS - Subsurface)</div>
+      <div class="post-toggle-row">
+        <span class="post-toggle-label">SSS Dokusunu Etkinleştir</span>
+        <label class="mini-switch"><input type="checkbox" id="wowSssToggle"><span class="mini-sl"></span></label>
+      </div>
+      <div id="wowSssControls" style="opacity:.3;pointer-events:none;">
+        <div class="ind-strip" style="margin-bottom:8px; flex-wrap:wrap; gap:4px;">
+          <button class="ind-btn sss-preset-btn active" data-sss="cosmetic">💄 Kozmetik Krem</button>
+          <button class="ind-btn sss-preset-btn" data-sss="soap">🧼 Sabun / Wax</button>
+          <button class="ind-btn sss-preset-btn" data-sss="milk">🥛 Süt / Sıvı</button>
+          <button class="ind-btn sss-preset-btn" data-sss="jade">💎 Yarı Saydam Cam</button>
+        </div>
+        <div class="ctrl-row" style="margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;">
+          <div class="ctrl-lbl"><span>Saçılım Rengi</span></div>
+          <input type="color" id="ctrlWowSssColor" value="#ffeedd" style="width:36px;height:24px;border:none;background:none;cursor:pointer;">
+        </div>
+        <div class="post-row" style="margin-bottom:6px;">
+          <div class="post-lbl"><span>Derinlik / Mesafe</span><span class="post-val" id="vWowSssDist">1.20m</span></div>
+          <input type="range" id="ctrlWowSssDist" min="0.1" max="4.0" step="0.1" value="1.20">
+        </div>
+      </div>
+
+      <!-- 4. 🎬 HOLLYWOOD LUT & SİNEMATİK RENK PALETLERİ -->
+      <div class="scene-section">🎬 Hollywood LUT Sinematik Renk Paletleri</div>
+      <div class="ind-strip" style="margin-bottom:8px; flex-wrap:wrap; gap:4px;">
+        <button class="ind-btn lut-btn active" data-lut="none">⚪ Orijinal</button>
+        <button class="ind-btn lut-btn" data-lut="portra">📸 Kodak Portra</button>
+        <button class="ind-btn lut-btn" data-lut="teal">🎬 Teal & Orange</button>
+        <button class="ind-btn lut-btn" data-lut="commercial">✨ E-Ticaret Studio</button>
+        <button class="ind-btn lut-btn" data-lut="moody">🌙 Moody Dark Gold</button>
+        <button class="ind-btn lut-btn" data-lut="vintage">🎞 Vintage Film</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1247,7 +1497,7 @@ body.ar-mode #toast {
     <div class="ctrl-row"><div class="ctrl-lbl"><span>↔ Yatay Açı</span><span class="ctrl-lbl-val" id="vHA">0°</span></div><input type="range" id="cHA" min="-180" max="180" step="1" value="0"></div>
     <div class="ctrl-row"><div class="ctrl-lbl"><span>↕ Dikey Açı</span><span class="ctrl-lbl-val" id="vVA">0°</span></div><input type="range" id="cVA" min="5" max="85" step="1" value="45"></div>
     <div class="ctrl-row"><div class="ctrl-lbl"><span>⟷ Uzaklık</span><span class="ctrl-lbl-val" id="vDist">4.0m</span></div><input type="range" id="cDist" min="2" max="8" step="0.1" value="4"></div>
-    <div class="ctrl-row"><div class="ctrl-lbl"><span>◎ Işın Açısı</span><span class="ctrl-lbl-val" id="vSpread">35°</span></div><input type="range" id="cSpread" min="10" max="70" step="1" value="35"></div>
+    <div class="ctrl-row"><div class="ctrl-lbl"><span>◎ Işın Açısı</span><span class="ctrl-lbl-val" id="vSpread">55°</span></div><input type="range" id="cSpread" min="10" max="88" step="1" value="55"></div>
     <div class="ldp-section">Yumuşatma</div>
     <div class="ctrl-row"><div class="ctrl-lbl"><span>🌫 Kenar</span><span class="ctrl-lbl-val" id="vPen">0.45</span></div><input type="range" id="cPen" min="0" max="1" step="0.01" value="0.45"></div>
     <div class="ctrl-row"><div class="ctrl-lbl"><span>☁ Gölge</span><span class="ctrl-lbl-val" id="vBlur">6.0</span></div><input type="range" id="cBlur" min="1" max="20" step="0.5" value="6"></div>
@@ -1340,7 +1590,7 @@ body.ar-mode #toast {
         <button class="preset-btn" data-preset="threeQuarter">3/4 Açı</button>
         <button class="preset-btn" data-preset="top">Üstten</button>
       </div>
-      <label class="beam-toggle"><input type="checkbox" id="beamToggle" checked/>Işın huzmeleri</label>
+      <label class="beam-toggle"><input type="checkbox" id="beamToggle"/>Işın huzmeleri</label>
     </div>
   </div>
 
@@ -1349,6 +1599,16 @@ body.ar-mode #toast {
     <div class="cam-grid">
       <div class="cam-row"><div class="cam-lbl"><span>🔭 FOV</span><span class="cam-val" id="vFov">40°</span></div><input type="range" id="ctrlFov" min="20" max="80" step="1" value="40"></div>
       <div class="cam-row"><div class="cam-lbl"><span>☀️ Pozlama</span><span class="cam-val" id="vExp">1.00</span></div><input type="range" id="ctrlExp" min="0.1" max="5.0" step="0.05" value="1.0"></div>
+      <div class="cam-row" style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;">
+        <div class="cam-lbl"><span>🎬 Ton Eşleme</span></div>
+        <select id="ctrlToneMap" class="lang-select" style="width:120px;padding:3px 6px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:4px;color:#fff;">
+          <option value="aces" selected>ACES Filmic</option>
+          <option value="neutral">Neutral (Doğal)</option>
+          <option value="reinhard">Reinhard</option>
+          <option value="cineon">Cineon</option>
+          <option value="linear">Linear</option>
+        </select>
+      </div>
     </div>
     <div class="cam-section" style="margin-top:4px;">Aspect Ratio (Export)</div>
     <div class="ar-row">
@@ -1438,14 +1698,44 @@ body.ar-mode #toast {
         <button class="preset-btn" data-preset="threeQuarter">3/4 Açı</button>
         <button class="preset-btn" data-preset="top">Üstten</button>
       </div>
-      <label class="beam-toggle"><input type="checkbox" id="beamToggle2" checked/>Işın huzmeleri</label>
+      <label class="beam-toggle"><input type="checkbox" id="beamToggle2"/>Işın huzmeleri</label>
     </div>
   </div>
 </div>
 
-<div id="topControlsWrap">
-  <button id="resetPosBtn">🎯 Kadrajı Sıfırla</button>
-  <button id="hideEquipBtn">👁 Ekipmanı Gizle</button>
+<div id="gridOverlay">
+  <div class="grid-v1"></div>
+  <div class="grid-v2"></div>
+  <div class="grid-h1"></div>
+  <div class="grid-h2"></div>
+  <div class="crosshair-target">+</div>
+  <div class="crop-corner tl"></div>
+  <div class="crop-corner tr"></div>
+  <div class="crop-corner bl"></div>
+  <div class="crop-corner br"></div>
+</div>
+
+<!-- Unified Top Center Toolbar -->
+<div id="topToolbar">
+  <button class="tb-btn" id="btnUndo" title="Geri Al (Ctrl+Z)" disabled>↩</button>
+  <button class="tb-btn" id="btnRedo" title="İleri Al (Ctrl+Y)" disabled>↪</button>
+  <div class="tb-sep"></div>
+  <button class="tb-btn" id="btnSave" title="Sahneyi Kaydet">💾</button>
+  <button class="tb-btn" id="btnLoad" title="Sahne Yükle">📂</button>
+  <input type="file" id="sceneFileInput" accept=".json" style="display:none"/>
+  <div class="tb-sep"></div>
+  <button class="tb-btn" id="btnShare" title="URL ile Paylaş">🔗</button>
+  <button class="tb-btn" id="btnCompare" title="Karşılaştırma Modu">🔀</button>
+  <div class="tb-sep"></div>
+  <button class="tb-btn" id="btnDayNight" title="Gece/Gündüz Modu">☀️</button>
+  <button class="tb-btn" id="btnLightMode" title="Önizleme Işığı">💡</button>
+  <button class="tb-btn" id="btnRefMatch" title="Referans Görsel Eşleştir">🔍</button>
+  <button class="tb-btn" id="btnFPS" title="Performans Sayacı">📊</button>
+  <div class="tb-sep"></div>
+  <button id="resetPosBtn" title="Kadrajı Sıfırla">🎯 Kadrajı Sıfırla</button>
+  <button id="gridOverlayBtn" title="Vizör / Izgara Kılavuzu">📐 Vizör / Izgara</button>
+  <button id="clayModeBtn" title="Kil Render Modu">🗿 Kil Modu</button>
+  <button id="hideEquipBtn" title="Stüdyo Ekipmanını Göster/Gizle">👁 Ekipmanı Gizle</button>
 </div><div id="shotWrap">
   <select id="qualitySelect">
     <option value="1024">SD · 1024px</option>
@@ -1510,28 +1800,53 @@ renderer.toneMappingExposure=1.1;
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x121113);
 const camera=new THREE.PerspectiveCamera(40,innerWidth/innerHeight,.1,100);
 
-// Initialize Path Tracer
+// Initialize Maximum Precision Photorealistic Path Tracer (Uncompromised Quality)
 window.pathTracer = new WebGLPathTracer(renderer);
 window.pathTracer.multipleImportanceSampling = true;
-window.pathTracer.tiles.set(3, 3);
+window.pathTracer.tiles.set(2, 2);
+window.pathTracer.bounces = 8;               // Max light bounce depth for realistic caustics & glass
+window.pathTracer.filterGlossyFactor = 0.0;   // Pure unbiased exact glossy reflections & speculars
+window.pathTracer.dynamicLowRes = false;     // Full native high resolution at all times
 window.pathTracer.setScene(scene, camera);
 
+window.syncPathTracer = function(reset = true) {
+  if (!window.pathTracer || !window.isPathTracing) return;
+  try {
+    scene.updateMatrixWorld(true);
+    if (window.pathTracer.updateMaterials) {
+      window.pathTracer.updateMaterials();
+    }
+    if (window.pathTracer.setScene) {
+      window.pathTracer.setScene(scene, camera);
+    }
+    if (window.pathTracer.updateCamera) {
+      window.pathTracer.updateCamera();
+    }
+    if (reset && window.pathTracer.reset) {
+      window.pathTracer.reset();
+    }
+  } catch (e) {
+    console.warn('PathTracer sync warning:', e);
+  }
+};
+
 const pathTracerToggleBtn = document.getElementById('pathTracerToggle');
-if(pathTracerToggleBtn) {
+if (pathTracerToggleBtn) {
   pathTracerToggleBtn.addEventListener('click', () => {
     window.isPathTracing = !window.isPathTracing;
-    if(window.isPathTracing) {
+    if (window.isPathTracing) {
       pathTracerToggleBtn.innerHTML = '✨ Işın İzleme (AÇIK)';
       pathTracerToggleBtn.style.background = 'rgba(47,212,145,0.2)';
       pathTracerToggleBtn.style.borderColor = '#2fd491';
       pathTracerToggleBtn.style.color = '#2fd491';
-      if(window.pathTracer.updateScene) window.pathTracer.updateScene(); else window.pathTracer.setScene(scene, camera);
-      window.pathTracer.updateCamera();
+      window.syncPathTracer(true);
+      toast(t('✨ Gerçek Zamanlı Işın İzleme (Path Tracing) Aktif'));
     } else {
       pathTracerToggleBtn.innerHTML = '✨ Işın İzleme (KAPALI)';
       pathTracerToggleBtn.style.background = 'rgba(212,145,47,0.2)';
       pathTracerToggleBtn.style.borderColor = '#d4912f';
       pathTracerToggleBtn.style.color = '#d4912f';
+      toast(t('Işın İzleme Kapatıldı'));
     }
   });
 }
@@ -1542,7 +1857,14 @@ window.addEventListener('resize',resize);
 /* ═══ ORBIT ═══ */
 const CT=new THREE.Vector3(0,1.25,0);
 let camR=8.2,camTh=Math.PI/4,camPh=Math.PI/2.6;
-function updateCam(){camera.position.set(CT.x+camR*Math.sin(camPh)*Math.sin(camTh),CT.y+camR*Math.cos(camPh),CT.z+camR*Math.sin(camPh)*Math.cos(camTh));camera.lookAt(CT); if(window.pathTracer) window.pathTracer.updateCamera();}
+function updateCam() {
+  camera.position.set(CT.x + camR * Math.sin(camPh) * Math.sin(camTh), CT.y + camR * Math.cos(camPh), CT.z + camR * Math.sin(camPh) * Math.cos(camTh));
+  camera.lookAt(CT);
+  if (window.pathTracer) {
+    window.pathTracer.updateCamera();
+    if (window.isPathTracing && window.pathTracer.reset) window.pathTracer.reset();
+  }
+}
 const ptrs=new Map();let turntableActive=false;
 let isSpaceDown = false;
 window.addEventListener('keydown', e => { if(e.code === 'Space' && e.target.tagName !== 'INPUT') { isSpaceDown = true; e.preventDefault(); } });
@@ -2170,6 +2492,10 @@ function scanModel(g) {
         dispersion: 0,
         texture: null,
         texScale: 1.0,
+        normalMap: null,
+        normalScale: 1.0,
+        attenuationColor: '#ffffff',
+        attenuationDistance: 1.0,
         visible: true,
         triCount: n.geometry.index ? n.geometry.index.count / 3 : n.geometry.attributes.position.count / 3,
         // Transform
@@ -2271,6 +2597,18 @@ function selectMeshLayer(id) {
   document.getElementById('ctrlMdDispersion').value = l.dispersion;
   document.getElementById('vMdDispersion').textContent = l.dispersion.toFixed(2);
 
+  if (l.normalMap) {
+    document.getElementById('mdNormalControls').style.display = 'block';
+  } else {
+    document.getElementById('mdNormalControls').style.display = 'none';
+  }
+  document.getElementById('ctrlMdNormalScale').value = l.normalScale || 1.0;
+  document.getElementById('vMdNormalScale').textContent = (l.normalScale || 1.0).toFixed(1);
+
+  document.getElementById('ctrlMdAttenColor').value = l.attenuationColor || '#ffffff';
+  document.getElementById('ctrlMdAttenDist').value = l.attenuationDistance || 1.0;
+  document.getElementById('vMdAttenDist').textContent = (l.attenuationDistance || 1.0).toFixed(2);
+
   // Transform controls sync
   document.getElementById('ctrlMdPosX').value = l.posX; document.getElementById('vMdPosX').textContent = l.posX.toFixed(2);
   document.getElementById('ctrlMdPosY').value = l.posY; document.getElementById('vMdPosY').textContent = l.posY.toFixed(2);
@@ -2301,6 +2639,8 @@ function applyMeshMat(l) {
     mt.ior = l.ior;
     mt.dispersion = l.dispersion;
     mt.thickness = l.transmission > 0 ? 1.0 : 0;
+    mt.attenuationColor.set(l.attenuationColor || '#ffffff');
+    mt.attenuationDistance = l.attenuationDistance || 1.0;
     
     if (l.texture) {
       mt.map = l.texture;
@@ -2308,6 +2648,13 @@ function applyMeshMat(l) {
     } else {
       mt.map = null;
       mt.needsUpdate = true;
+    }
+    if (l.normalMap) {
+      mt.normalMap = l.normalMap;
+      mt.normalScale.set(l.normalScale || 1.0, l.normalScale || 1.0);
+      mt.needsUpdate = true;
+    } else {
+      mt.normalMap = null;
     }
   }
   // Listeyi güncelle (renk kutusu vb.)
@@ -2583,7 +2930,18 @@ document.body.addEventListener('drop', e => {
 let ppCol=false;
 document.getElementById('ppHeader').addEventListener('click',()=>{ppCol=!ppCol;document.getElementById('productPanel').classList.toggle('collapsed',ppCol);document.getElementById('ppToggle').textContent=ppCol?'›':'‹';});
 document.querySelectorAll('.pp-tab').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('.pp-tab').forEach(b=>b.classList.remove('active'));document.querySelectorAll('.pp-pane').forEach(p=>p.classList.remove('active'));btn.classList.add('active');document.getElementById('pane-'+btn.dataset.tab).classList.add('active');}));
-document.querySelectorAll('.sheet-tab').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('.sheet-tab').forEach(b=>b.classList.remove('active'));document.querySelectorAll('.sheet-pane').forEach(p=>p.classList.remove('active'));btn.classList.add('active');document.getElementById('spane-'+btn.dataset.stab).classList.add('active');}));
+document.querySelectorAll('.sheet-tab').forEach(btn => btn.addEventListener('click', () => {
+  document.querySelectorAll('.sheet-tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.sheet-pane').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('spane-' + btn.dataset.stab).classList.add('active');
+
+  const bs = document.getElementById('bottomSheet');
+  if (bs && bs.classList.contains('collapsed')) {
+    bs.classList.remove('collapsed');
+  }
+  updateDownloadButtonsVisibility();
+}));
 
 /* ═══ SAHNE ÖZELLİKLERİ ═══ */
 const BG_COLORS={studio:0x121113,warm:0x1a1208,cool:0x080d1a,sunset:0x150508,grey:0x2a2a2a,white:0xe0ddd8,outdoor:0x0a1520};
@@ -2599,28 +2957,99 @@ document.getElementById('ctrlFog').addEventListener('input',e=>{document.getElem
 
 /* ═══ PROPS (UPLOAD) ═══ */
 // Panel toggle
-document.getElementById('toggleLDP').addEventListener('click',()=>{
-  const p=document.getElementById('lightDetailPanel');
-  const btn=document.getElementById('toggleLDP');
-  const vis=!p.classList.contains('visible');
-  p.classList.toggle('visible',vis);btn.classList.toggle('active',vis);
+function updateLDPPosition() {
+  const diagPanel = document.getElementById('diagramPanel');
+  if (diagPanel && diagPanel.classList.contains('visible')) {
+    const rect = diagPanel.getBoundingClientRect();
+    const topPos = Math.max(56, Math.round(rect.bottom + 8));
+    ldp.style.top = topPos + 'px';
+    ldp.style.maxHeight = 'calc(100vh - ' + (topPos + 16) + 'px)';
+  } else {
+    ldp.style.top = '56px';
+    ldp.style.maxHeight = 'calc(100vh - 120px)';
+  }
+}
+
+function updateDownloadButtonsVisibility() {
+  const btnGLB = document.getElementById('exportGlbBtn');
+  if (!btnGLB) return;
+  const ldpVisible = typeof ldp !== 'undefined' && ldp && ldp.classList.contains('visible');
+  const bSheet = document.getElementById('bottomSheet');
+  const sheetExpanded = bSheet && !bSheet.classList.contains('collapsed');
+
+  if (ldpVisible || sheetExpanded) {
+    btnGLB.style.display = 'none';
+  } else {
+    btnGLB.style.display = 'block';
+  }
+}
+
+function closeAllRightPanels() {
+  ['lightDetailPanel', 'diagramPanel', 'propLayerPanel'].forEach(id => {
+    const p = document.getElementById(id);
+    if (p) p.classList.remove('visible');
+  });
+  ['toggleLDP', 'toggleDiag', 'togglePLP'].forEach(id => {
+    const btn = document.getElementById(id);
+    if (btn) btn.classList.remove('active');
+  });
+  ldp.style.top = '56px';
+  ldp.style.maxHeight = '';
+  updateDownloadButtonsVisibility();
+}
+
+document.getElementById('toggleLDP').addEventListener('click', () => {
+  const p = document.getElementById('lightDetailPanel');
+  const btn = document.getElementById('toggleLDP');
+  const vis = !p.classList.contains('visible');
+  if (vis) {
+    if (document.getElementById('propLayerPanel')) {
+      document.getElementById('propLayerPanel').classList.remove('visible');
+      if (document.getElementById('togglePLP')) document.getElementById('togglePLP').classList.remove('active');
+    }
+    openLDP(activeId || Object.keys(lightObjects)[0]);
+  } else {
+    closeLDP();
+  }
 });
-document.getElementById('toggleDiag').addEventListener('click',()=>{
-  const p=document.getElementById('diagramPanel');
-  const btn=document.getElementById('toggleDiag');
-  const vis=!p.classList.contains('visible');
-  p.classList.toggle('visible',vis);btn.classList.toggle('active',vis);
-  if(vis) setTimeout(updateDiagCanvasSize, 10);
+
+document.getElementById('toggleDiag').addEventListener('click', () => {
+  const p = document.getElementById('diagramPanel');
+  const btn = document.getElementById('toggleDiag');
+  const vis = !p.classList.contains('visible');
+  if (vis) {
+    if (document.getElementById('propLayerPanel')) {
+      document.getElementById('propLayerPanel').classList.remove('visible');
+      if (document.getElementById('togglePLP')) document.getElementById('togglePLP').classList.remove('active');
+    }
+    p.classList.add('visible');
+    btn.classList.add('active');
+    setTimeout(() => {
+      updateDiagCanvasSize();
+      if (ldp.classList.contains('visible')) updateLDPPosition();
+    }, 10);
+  } else {
+    p.classList.remove('visible');
+    btn.classList.remove('active');
+    updateLDPPosition();
+  }
 });
-document.getElementById('togglePLP').addEventListener('click',()=>{
-  const p=document.getElementById('propLayerPanel');
-  const btn=document.getElementById('togglePLP');
-  const vis=!p.classList.contains('visible');
-  p.classList.toggle('visible',vis);btn.classList.toggle('active',vis);
+
+document.getElementById('togglePLP').addEventListener('click', () => {
+  const p = document.getElementById('propLayerPanel');
+  const btn = document.getElementById('togglePLP');
+  const vis = !p.classList.contains('visible');
+  closeAllRightPanels();
+  if (vis) {
+    p.classList.add('visible');
+    btn.classList.add('active');
+  }
 });
-document.getElementById('diagClose').addEventListener('click',()=>{
+
+document.getElementById('diagClose').addEventListener('click', () => {
   document.getElementById('diagramPanel').classList.remove('visible');
   document.getElementById('toggleDiag').classList.remove('active');
+  updateLDPPosition();
 });
 
 // Props: uploaded 3D objects
@@ -2841,6 +3270,59 @@ document.getElementById('btnResetPost').addEventListener('click',()=>{postState=
 /* ═══ KAMERA ═══ */
 document.getElementById('ctrlFov').addEventListener('input',e=>{camera.fov=+e.target.value;camera.updateProjectionMatrix();document.getElementById('vFov').textContent=e.target.value+'°';});
 document.getElementById('ctrlExp').addEventListener('input',e=>{renderer.toneMappingExposure=+e.target.value;document.getElementById('vExp').textContent=parseFloat(e.target.value).toFixed(2);});
+if(document.getElementById('ctrlToneMap')){document.getElementById('ctrlToneMap').addEventListener('change',e=>{const val=e.target.value;if(val==='aces')renderer.toneMapping=THREE.ACESFilmicToneMapping;else if(val==='neutral')renderer.toneMapping=THREE.NeutralToneMapping||THREE.LinearToneMapping;else if(val==='reinhard')renderer.toneMapping=THREE.ReinhardToneMapping;else if(val==='cineon')renderer.toneMapping=THREE.CineonToneMapping;else renderer.toneMapping=THREE.LinearToneMapping;if(window.pathTracer&&window.pathTracer.updateMaterials)window.pathTracer.updateMaterials();toast('Ton eşleme güncellendi');});}
+if(document.getElementById('ctrlHdriRot')){document.getElementById('ctrlHdriRot').addEventListener('input',e=>{const deg=+e.target.value;document.getElementById('vHdriRot').textContent=deg+'°';const rad=THREE.MathUtils.degToRad(deg);if('environmentRotation' in scene)scene.environmentRotation.set(0,rad,0);if('backgroundRotation' in scene)scene.backgroundRotation.set(0,rad,0);if(window.pathTracer&&window.pathTracer.updateEnvironment)window.pathTracer.updateEnvironment();});}
+if(document.getElementById('ctrlHdriBlur')){document.getElementById('ctrlHdriBlur').addEventListener('input',e=>{const val=+e.target.value;document.getElementById('vHdriBlur').textContent=val.toFixed(2);if('backgroundBlurriness' in scene)scene.backgroundBlurriness=val;if(window.pathTracer&&window.pathTracer.updateEnvironment)window.pathTracer.updateEnvironment();});}
+if(document.getElementById('ctrlFloorRoughness')){document.getElementById('ctrlFloorRoughness').addEventListener('input',e=>{const val=+e.target.value;document.getElementById('vFloorRoughness').textContent=val.toFixed(2);if(typeof floorMat!=='undefined')floorMat.roughness=val;});}
+if(document.getElementById('mdNormalBtn')){document.getElementById('mdNormalBtn').addEventListener('click',()=>document.getElementById('mdNormalInput').click());document.getElementById('mdNormalInput').addEventListener('change',e=>{const file=e.target.files[0];if(!file)return;const l=meshLayers.find(x=>x.id===activeMeshId);if(!l)return;const reader=new FileReader();reader.onload=ev=>{const loader=new THREE.TextureLoader();loader.load(ev.target.result,tex=>{tex.wrapS=tex.wrapT=THREE.RepeatWrapping;l.normalMap=tex;if(l.matType==='original'){l.matType='custom';document.getElementById('mdMatType').value='custom';}document.getElementById('mdNormalControls').style.display='block';applyMeshMat(l);toast('Kabartma haritası yüklendi!');});};reader.readAsDataURL(file);});document.getElementById('ctrlMdNormalScale').addEventListener('input',e=>{const val=parseFloat(e.target.value);document.getElementById('vMdNormalScale').textContent=val.toFixed(1);const l=meshLayers.find(x=>x.id===activeMeshId);if(!l)return;l.normalScale=val;applyMeshMat(l);});}
+if(document.getElementById('ctrlMdAttenColor')){document.getElementById('ctrlMdAttenColor').addEventListener('input',e=>{const l=meshLayers.find(x=>x.id===activeMeshId);if(!l)return;l.attenuationColor=e.target.value;if(l.matType==='original'){l.matType='custom';document.getElementById('mdMatType').value='custom';}applyMeshMat(l);});document.getElementById('ctrlMdAttenDist').addEventListener('input',e=>{const val=parseFloat(e.target.value);document.getElementById('vMdAttenDist').textContent=val.toFixed(2);const l=meshLayers.find(x=>x.id===activeMeshId);if(!l)return;l.attenuationDistance=val;applyMeshMat(l);});}
+
+/* Procedural Sky Simulation */
+let sunMesh=null, sunLight=null;
+function updateProceduralSun(){
+  const elev=+document.getElementById('ctrlSunElevation').value;
+  const azi=+document.getElementById('ctrlSunAzimuth').value;
+  const turb=+document.getElementById('ctrlSkyTurbidity').value;
+  document.getElementById('vSunElevation').textContent=elev+'°';
+  document.getElementById('vSunAzimuth').textContent=azi+'°';
+  document.getElementById('vSkyTurbidity').textContent=turb.toFixed(1);
+  const phi=THREE.MathUtils.degToRad(90-elev);
+  const theta=THREE.MathUtils.degToRad(azi);
+  const sunPos=new THREE.Vector3().setFromSphericalCoords(15,phi,theta);
+  if(!sunLight){
+    sunLight=new THREE.DirectionalLight(0xfffaed,3.0);
+    sunLight.castShadow=true;
+    sunLight.shadow.mapSize.set(2048,2048);
+    scene.add(sunLight);
+  }
+  sunLight.intensity = 3.0;
+  sunLight.visible = true;
+  sunLight.position.copy(sunPos);
+  // Sky color shift based on elevation (golden hour / day / dusk)
+  const skyCol = elev < 15 ? new THREE.Color(0xff8844) : elev < 35 ? new THREE.Color(0xffd5a0) : new THREE.Color(0x90c3ff);
+  if(document.getElementById('skyToggle').checked){
+    scene.background = skyCol;
+    if(window.pathTracer && window.pathTracer.updateEnvironment) window.pathTracer.updateEnvironment();
+  }
+}
+if(document.getElementById('skyToggle')){
+  document.getElementById('skyToggle').addEventListener('change',e=>{
+    const c=document.getElementById('skyControls');
+    const on=e.target.checked;
+    c.style.opacity=on?'1':'.3';
+    c.style.pointerEvents=on?'auto':'none';
+    if(on){ 
+      updateProceduralSun(); 
+    } else { 
+      if(sunLight){ sunLight.intensity=0; sunLight.visible=false; } 
+      scene.background=new THREE.Color(0x121113); 
+      if(window.pathTracer && window.pathTracer.updateEnvironment) window.pathTracer.updateEnvironment();
+    }
+  });
+  ['ctrlSunElevation','ctrlSunAzimuth','ctrlSkyTurbidity'].forEach(id=>{
+    document.getElementById(id).addEventListener('input',()=>{ if(document.getElementById('skyToggle').checked) updateProceduralSun(); });
+  });
+}
 let curAR='free';
 const AR_RATIOS={'1:1':[1,1],'4:5':[4,5],'3:2':[3,2],'16:9':[16,9],'free':null};
 document.querySelectorAll('.ar-btn').forEach(btn=>{btn.addEventListener('click',()=>{document.querySelectorAll('.ar-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');curAR=btn.dataset.ar;updateARFrame();});});
@@ -2876,7 +3358,7 @@ document.getElementById('histToggle').addEventListener('change',e=>{
 });
 
 /* ═══ IŞIK SİSTEMİ ═══ */
-const LT=new THREE.Vector3(0,1.15,0);let lCnt=0;const lightObjects={};let equipHidden=false;let beams=true;let activeId=null;const ldp=document.getElementById('lightDetailPanel');
+const LT=new THREE.Vector3(0,1.15,0);let lCnt=0;const lightObjects={};let equipHidden=false;let beams=false;let activeId=null;const ldp=document.getElementById('lightDetailPanel');
 
 /* === PROPS - önceden tanımla, animate(0)'dan önce === */
 const propObjects={};
@@ -2896,7 +3378,7 @@ const DIFF_OFFSETS=[[0,0],[1,0],[-1,0],[0,1],[0,-1]];
 
 function buildLight(sp){
   lCnt++;const id='l'+lCnt;const kelvin=sp.kelvin??5600;const col=kelvinToThreeColor(kelvin);
-  const cfg={id,label:sp.label,color:col,kelvin,maxI:6,defPow:sp.power,ps:sp.ps||[1.1,1.4]};
+  const cfg={id,label:sp.label,color:col,kelvin,maxI:20,defPow:sp.power,ps:sp.ps||[1.1,1.4]};
   const params={hAngle:sp.hAngle,vAngle:sp.vAngle,dist:sp.dist,spread:sp.spread,pen:sp.pen??0.45,blur:sp.blur??6,decay:sp.decay??1,diffOn:sp.diffOn??false,diffR:sp.diffR??0.6,diffD:sp.diffD??0.5,diffO:sp.diffO??0.55};
   const defs=Object.assign({},params);
   const pos=p2p(params.hAngle,params.vAngle,params.dist);
@@ -2917,15 +3399,15 @@ function buildLight(sp){
   const tMat=new THREE.MeshStandardMaterial({color:0x222222,metalness:0.8,roughness:0.5});
   for(let i=0;i<3;i++){const tLeg=new THREE.Mesh(new THREE.CylinderGeometry(.015,.01,0.4,8),tMat);tLeg.rotation.x=Math.PI/2.5;tLeg.position.set(0,0.15,0.15);const pivot=new THREE.Group();pivot.rotation.y=(i*Math.PI*2)/3;pivot.add(tLeg);leg.add(pivot);}
   leg.position.set(pos.x,0,pos.z);scene.add(leg);
-  const spot=new THREE.SpotLight(cfg.color,cfg.defPow/100*cfg.maxI,22,ang,params.pen,params.decay);spot.position.copy(pos);
+  const spot=new THREE.SpotLight(cfg.color,cfg.defPow/100*cfg.maxI,50,ang,params.pen,params.decay);spot.position.copy(pos);
   const tgt=new THREE.Object3D();tgt.position.copy(LT);scene.add(tgt);spot.target=tgt;
-  spot.castShadow=true;spot.shadow.mapSize.set(4096,4096);spot.shadow.bias=-0.0004;spot.shadow.normalBias=0.06;spot.shadow.radius=Math.max(5,params.blur);spot.shadow.camera.near=0.5;spot.shadow.camera.far=20;scene.add(spot);
+  spot.castShadow=true;spot.shadow.mapSize.set(4096,4096);spot.shadow.bias=-0.0004;spot.shadow.normalBias=0.06;spot.shadow.radius=Math.max(5,params.blur);spot.shadow.camera.near=0.5;spot.shadow.camera.far=50;scene.add(spot);
   const bl=pos.distanceTo(LT),br=Math.tan(ang)*bl;
   const coneGeo=new THREE.ConeGeometry(br,bl,28,1,true);coneGeo.translate(0,-bl/2,0);
   const coneMat=new THREE.MeshBasicMaterial({color:cfg.color,transparent:true,opacity:.05,side:THREE.DoubleSide,depthWrite:false,blending:THREE.AdditiveBlending});
   const cone=new THREE.Mesh(coneGeo,coneMat);cone.quaternion.copy(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,-1,0),dir));cone.position.copy(pos);scene.add(cone);
   const up=new THREE.Vector3(0,1,0);const right=new THREE.Vector3().crossVectors(dir,up).normalize();const upDir=new THREE.Vector3().crossVectors(right,dir).normalize();
-  const areaSpots=[];for(let i=0;i<5;i++){const as=new THREE.SpotLight(cfg.color,0,22,ang+0.18,0.9,params.decay);as.castShadow=false;const at=new THREE.Object3D();at.position.copy(LT);scene.add(at);as.target=at;scene.add(as);areaSpots.push({spot:as,tgt:at});}
+  const areaSpots=[];for(let i=0;i<5;i++){const as=new THREE.SpotLight(cfg.color,0,50,ang+0.18,0.9,params.decay);as.castShadow=false;const at=new THREE.Object3D();at.position.copy(LT);scene.add(at);as.target=at;scene.add(as);areaSpots.push({spot:as,tgt:at});}
   const diffMat=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:params.diffO,side:THREE.DoubleSide,depthWrite:false});
   const diffRingMat=new THREE.MeshBasicMaterial({color:0xaaaaaa,transparent:true,opacity:.6,side:THREE.DoubleSide});
   const diffGroup=new THREE.Group();diffGroup.add(new THREE.Mesh(new THREE.CircleGeometry(params.diffR,48),diffMat),new THREE.Mesh(new THREE.RingGeometry(params.diffR,params.diffR+.018,48),diffRingMat));
@@ -2935,79 +3417,215 @@ function buildLight(sp){
 function _updateAreaSpots(id){const o=lightObjects[id];const{params,areaSpots,cfg,curPow}=o;const pos=p2p(params.hAngle,params.vAngle,params.dist);const dir=LT.clone().sub(pos).normalize();const up=new THREE.Vector3(0,1,0);const r=new THREE.Vector3().crossVectors(dir,up).normalize();const u=new THREE.Vector3().crossVectors(r,dir).normalize();o.right.copy(r);o.upDir.copy(u);const dpos=pos.clone().lerp(LT,params.diffD);const baseI=(curPow/100)*cfg.maxI;const t=params.diffOn?params.diffO:0;o.spot.intensity=baseI*(1-t*0.7);o.spot.penumbra=params.pen;areaSpots.forEach((as,i)=>{const off=DIFF_OFFSETS[i];const spread=params.diffR*(i===0?0:1);const spos=dpos.clone().addScaledVector(r,off[0]*spread).addScaledVector(u,off[1]*spread);as.spot.position.copy(spos);as.tgt.position.copy(LT);as.spot.color.set(cfg.color);as.spot.intensity=t*(baseI/5)*1.4;as.spot.penumbra=0.95;as.spot.angle=THREE.MathUtils.degToRad(params.spread+12);as.spot.decay=params.decay;as.spot.visible=params.diffOn&&o.spot.visible;});if(o.pm&&o.pm.isMeshStandardMaterial){o.pm.emissiveIntensity=curPow;if(window.pathTracer&&window.pathTracer.updateMaterials)window.pathTracer.updateMaterials();}}
 function destroyLight(id){const o=lightObjects[id];if(!o)return;[o.sg,o.leg,o.spot,o.cone,o.diffGroup].forEach(x=>scene.remove(x));o.areaSpots.forEach(as=>{scene.remove(as.spot);scene.remove(as.tgt);});delete lightObjects[id];}
 
-function buildLight(sp){
-  lCnt++;const id='l'+lCnt;const kelvin=sp.kelvin??5600;const col=kelvinToThreeColor(kelvin);
-  const cfg={id,label:sp.label,color:col,kelvin,maxI:6,defPow:sp.power,ps:sp.ps||[1.1,1.4]};
-  const params={hAngle:sp.hAngle,vAngle:sp.vAngle,dist:sp.dist,spread:sp.spread,pen:sp.pen??0.45,blur:sp.blur??6,decay:sp.decay??1,diffOn:sp.diffOn??false,diffR:sp.diffR??0.6,diffD:sp.diffD??0.5,diffO:sp.diffO??0.55,lType:sp.lType??'rect'};
-  const defs=Object.assign({},params);
-  const pos=p2p(params.hAngle,params.vAngle,params.dist);
-  const ang=THREE.MathUtils.degToRad(params.spread);
-  const dir=LT.clone().sub(pos).normalize();
-  const sg=new THREE.Group();
-  const pm=new THREE.MeshStandardMaterial({color:0x000000,emissive:cfg.color,emissiveIntensity:cfg.defPow,transparent:true,opacity:.9,roughness:1,metalness:0});
-  sg.position.copy(pos);sg.lookAt(LT);scene.add(sg);
-  const lh=Math.max(.05,pos.y);const leg=new THREE.Group();
-  const legMat=new THREE.MeshStandardMaterial({color:0x111111,metalness:0.7,roughness:0.4});
-  const pole=new THREE.Mesh(new THREE.CylinderGeometry(.015,.03,lh,8),legMat);pole.position.set(0,lh/2,0);leg.add(pole);
-  const tMat=new THREE.MeshStandardMaterial({color:0x222222,metalness:0.8,roughness:0.5});
-  for(let i=0;i<3;i++){const tLeg=new THREE.Mesh(new THREE.CylinderGeometry(.015,.01,0.4,8),tMat);tLeg.rotation.x=Math.PI/2.5;tLeg.position.set(0,0.15,0.15);const pivot=new THREE.Group();pivot.rotation.y=(i*Math.PI*2)/3;pivot.add(tLeg);leg.add(pivot);}
-  leg.position.set(pos.x,0,pos.z);scene.add(leg);
-  const spot=new THREE.SpotLight(cfg.color,cfg.defPow/100*cfg.maxI,22,ang,params.pen,params.decay);spot.position.copy(pos);
-  const tgt=new THREE.Object3D();tgt.position.copy(LT);scene.add(tgt);spot.target=tgt;
-  spot.castShadow=true;spot.shadow.mapSize.set(4096,4096);spot.shadow.bias=-0.0004;spot.shadow.normalBias=0.06;spot.shadow.radius=params.blur*0.5+1;spot.shadow.camera.near=0.5;spot.shadow.camera.far=20;scene.add(spot);
-  const bl=pos.distanceTo(LT),br=Math.tan(ang)*bl;
-  const coneGeo=new THREE.ConeGeometry(br,bl,28,1,true);coneGeo.translate(0,-bl/2,0);
-  const coneMat=new THREE.MeshBasicMaterial({color:cfg.color,transparent:true,opacity:.05,side:THREE.DoubleSide,depthWrite:false,blending:THREE.AdditiveBlending});
-  const cone=new THREE.Mesh(coneGeo,coneMat);cone.quaternion.copy(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,-1,0),dir));cone.position.copy(pos);scene.add(cone);
-  const diffMat=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:params.diffO,side:THREE.DoubleSide,depthWrite:false});
-  const diffRingMat=new THREE.MeshBasicMaterial({color:0xaaaaaa,transparent:true,opacity:.6,side:THREE.DoubleSide});
-  const diffGroup=new THREE.Group();diffGroup.add(new THREE.Mesh(new THREE.CircleGeometry(params.diffR,48),diffMat),new THREE.Mesh(new THREE.RingGeometry(params.diffR,params.diffR+.018,48),diffRingMat));
-  const dpos=pos.clone().lerp(LT,params.diffD);diffGroup.position.copy(dpos);diffGroup.lookAt(pos);diffGroup.visible=params.diffOn&&!equipHidden;scene.add(diffGroup);
-  lightObjects[id]={spot,pm,cone,sg,leg,cfg,params,defs,curPow:cfg.defPow,diffGroup,diffMat,diffRingMat,areaSpots:[],right:new THREE.Vector3(),upDir:new THREE.Vector3()};
-  updateLP(id);return id;
+// ── REALISTIC 3D STUDIO FLASH STROBE MESH BUILDERS ──
+function buildStudioStandMesh(legGroup, height) {
+  while (legGroup.children.length > 0) {
+    let child = legGroup.children[0];
+    if (child.geometry) child.geometry.dispose();
+    legGroup.remove(child);
+  }
 }
 
-function updateLP(id){const o=lightObjects[id];const{params,sg,leg,spot,cone,diffGroup,diffMat,cfg}=o;const pos=p2p(params.hAngle,params.vAngle,params.dist);const ang=THREE.MathUtils.degToRad(params.spread);const dir=LT.clone().sub(pos).normalize();sg.position.copy(pos);sg.lookAt(LT);
-  while(sg.children.length > 0){ let child = sg.children[0]; if(child.geometry) child.geometry.dispose(); sg.remove(child); }
-  const boxDepth=0.5;
-  const mountGeo=new THREE.CylinderGeometry(0.04,0.04,0.15,16);mountGeo.rotateX(Math.PI/2);mountGeo.translate(0,0,-boxDepth-0.075);
-  sg.add(new THREE.Mesh(mountGeo,new THREE.MeshStandardMaterial({color:0x333333,roughness:0.6,metalness:0.8})));
-  if (params.lType === 'rect') {
-    const backGeo=new THREE.CylinderGeometry(0.05,0.707,boxDepth,4);
-    backGeo.rotateX(Math.PI/2);backGeo.rotateZ(Math.PI/4);backGeo.translate(0,0,-boxDepth/2);backGeo.scale(cfg.ps[0],cfg.ps[1],1);
-    sg.add(new THREE.Mesh(backGeo,new THREE.MeshStandardMaterial({color:0x111111,roughness:0.9,metalness:0.2})));
-    sg.add(new THREE.Mesh(new THREE.PlaneGeometry(cfg.ps[0]*.96,cfg.ps[1]*.96),o.pm));
-    diffGroup.visible=params.diffOn&&!equipHidden&&o.spot.visible;
-  } else if (params.lType === 'ring') {
-    const ringGeo = new THREE.TorusGeometry(cfg.ps[0]/2, 0.1, 16, 48);
-    sg.add(new THREE.Mesh(ringGeo,new THREE.MeshStandardMaterial({color:0x111111,roughness:0.9,metalness:0.2})));
-    const lightRing = new THREE.Mesh(new THREE.TorusGeometry(cfg.ps[0]/2, 0.09, 16, 48), o.pm);
-    lightRing.position.z = 0.02;
-    sg.add(lightRing);
-    diffGroup.visible = false;
-  } else if (params.lType === 'octa') {
-    const octaGeo = new THREE.ConeGeometry(cfg.ps[0]/1.5, boxDepth, 8);
-    octaGeo.rotateX(-Math.PI/2); octaGeo.translate(0,0,-boxDepth/2);
-    sg.add(new THREE.Mesh(octaGeo,new THREE.MeshStandardMaterial({color:0x111111,roughness:0.9,metalness:0.2})));
-    sg.add(new THREE.Mesh(new THREE.CircleGeometry(cfg.ps[0]/1.55, 8), o.pm));
-    diffGroup.visible=params.diffOn&&!equipHidden&&o.spot.visible;
-  } else if (params.lType === 'hard') {
-    const hardGeo = new THREE.ConeGeometry(cfg.ps[0]/2.5, boxDepth/2, 16);
-    hardGeo.rotateX(-Math.PI/2); hardGeo.translate(0,0,-boxDepth/4);
-    sg.add(new THREE.Mesh(hardGeo,new THREE.MeshStandardMaterial({color:0x222222,roughness:0.3,metalness:0.9, side:THREE.DoubleSide})));
-    const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.08, 16, 16), o.pm);
-    bulb.position.z = 0.05;
-    sg.add(bulb);
-    diffGroup.visible = false;
+function buildStudioLightHeadMesh(sg, lType, cfg, params, pm) {
+  while (sg.children.length > 0) {
+    let child = sg.children[0];
+    if (child.geometry) child.geometry.dispose();
+    sg.remove(child);
   }
-  const lh=Math.max(.05,pos.y);if(leg.children[0].geometry) leg.children[0].geometry.dispose();leg.children[0].geometry=new THREE.CylinderGeometry(.015,.03,lh,8);leg.children[0].position.set(0,lh/2,0);leg.position.set(pos.x,0,pos.z);spot.position.copy(pos);
-  if (params.lType === 'hard') { spot.angle=Math.min(ang, THREE.MathUtils.degToRad(30)); spot.penumbra=0.05; } else { spot.angle=ang; spot.penumbra=params.pen; }
-  spot.decay=params.decay;spot.shadow.radius=params.blur*0.5+1;spot.shadow.normalBias=0.06;
-  cone.geometry.dispose();const bl=pos.distanceTo(LT),br=Math.tan(ang)*bl;const ng=new THREE.ConeGeometry(br,bl,28,1,true);ng.translate(0,-bl/2,0);cone.geometry=ng;cone.quaternion.copy(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,-1,0),dir));cone.position.copy(pos);const dpos=pos.clone().lerp(LT,params.diffD);diffGroup.position.copy(dpos);diffGroup.lookAt(pos);diffGroup.children[0].geometry.dispose();diffGroup.children[0].geometry=new THREE.CircleGeometry(params.diffR,48);diffGroup.children[1].geometry.dispose();diffGroup.children[1].geometry=new THREE.RingGeometry(params.diffR,params.diffR+.018,48);diffMat.opacity=params.diffO;_updateAreaSpots(id);}
+
+  const boxDepth = 0.52;
+  const pw = cfg.ps[0];
+  const ph = cfg.ps[1];
+
+  const bodyMat = new THREE.MeshStandardMaterial({ color: 0x18181c, metalness: 0.82, roughness: 0.25 });
+  const silverMat = new THREE.MeshStandardMaterial({ color: 0xe5eaef, metalness: 0.95, roughness: 0.15, side: THREE.DoubleSide });
+  const blackFabricMat = new THREE.MeshStandardMaterial({ color: 0x09090b, roughness: 0.95, side: THREE.DoubleSide });
+  const chromeMat = new THREE.MeshStandardMaterial({ color: 0xd0d5dd, metalness: 0.95, roughness: 0.1 });
+  const screenMat = new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0x0088ff, emissiveIntensity: 0.8 });
+
+  // 1. Studio Strobe Flash Unit Housing
+  const strobeBody = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.11, 0.26, 24), bodyMat);
+  strobeBody.rotateX(Math.PI / 2);
+  strobeBody.position.set(0, 0, -boxDepth - 0.13);
+  sg.add(strobeBody);
+
+  const speedring = new THREE.Mesh(new THREE.CylinderGeometry(0.125, 0.125, 0.04, 24), chromeMat);
+  speedring.rotateX(Math.PI / 2);
+  speedring.position.set(0, 0, -boxDepth);
+  sg.add(speedring);
+
+  const screen = new THREE.Mesh(new THREE.PlaneGeometry(0.08, 0.05), screenMat);
+  screen.position.set(0, 0.02, -boxDepth - 0.261);
+  screen.rotation.y = Math.PI;
+  sg.add(screen);
+
+  const handle = new THREE.Mesh(new THREE.TorusGeometry(0.05, 0.01, 8, 16, Math.PI), bodyMat);
+  handle.position.set(0, -0.06, -boxDepth - 0.26);
+  handle.rotation.x = Math.PI / 2;
+  sg.add(handle);
+
+  const yoke = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, 0.14, 16), chromeMat);
+  yoke.position.set(0, -0.16, -boxDepth - 0.13);
+  sg.add(yoke);
+
+  // 2. Light Modifier Head based on lType
+  if (lType === 'rect') {
+    const backGeo = new THREE.CylinderGeometry(0.12, 0.707, boxDepth, 4, 1, true);
+    backGeo.rotateX(-Math.PI / 2);
+    backGeo.rotateZ(Math.PI / 4);
+    backGeo.translate(0, 0, -boxDepth / 2);
+    backGeo.scale(pw, ph, 1);
+
+    sg.add(new THREE.Mesh(backGeo, blackFabricMat));
+
+    const innerGeo = backGeo.clone();
+    innerGeo.scale(0.99, 0.99, 0.99);
+    sg.add(new THREE.Mesh(innerGeo, silverMat));
+
+    const diffScreen = new THREE.Mesh(new THREE.PlaneGeometry(pw * 0.96, ph * 0.96), pm);
+    diffScreen.position.set(0, 0, 0);
+    sg.add(diffScreen);
+
+    const rim = new THREE.Mesh(new THREE.RingGeometry(pw * 0.48, pw * 0.51, 4), blackFabricMat);
+    rim.position.set(0, 0, 0.001);
+    rim.rotation.z = Math.PI / 4;
+    sg.add(rim);
+
+  } else if (lType === 'octa') {
+    const radius = pw * 0.65;
+    const octaGeo = new THREE.CylinderGeometry(0.12, radius, boxDepth, 8, 1, true);
+    octaGeo.rotateX(-Math.PI / 2);
+    octaGeo.translate(0, 0, -boxDepth / 2);
+
+    sg.add(new THREE.Mesh(octaGeo, blackFabricMat));
+
+    const innerOcta = octaGeo.clone();
+    innerOcta.scale(0.99, 0.99, 0.99);
+    sg.add(new THREE.Mesh(innerOcta, silverMat));
+
+    const diffOcta = new THREE.Mesh(new THREE.CircleGeometry(radius * 0.98, 8), pm);
+    diffOcta.position.set(0, 0, 0);
+    sg.add(diffOcta);
+
+  } else if (lType === 'ring') {
+    const ringRadius = pw * 0.45;
+    const ringGeo = new THREE.TorusGeometry(ringRadius, 0.08, 16, 48);
+    sg.add(new THREE.Mesh(ringGeo, bodyMat));
+
+    const lightRing = new THREE.Mesh(new THREE.TorusGeometry(ringRadius, 0.075, 16, 48), pm);
+    lightRing.position.z = 0.015;
+    sg.add(lightRing);
+
+  } else if (lType === 'hard') {
+    const dishRadius = pw * 0.42;
+    const dishDepth = 0.28;
+    const dishGeo = new THREE.CylinderGeometry(0.12, dishRadius, dishDepth, 24, 1, true);
+    dishGeo.rotateX(-Math.PI / 2);
+    dishGeo.translate(0, 0, -dishDepth / 2);
+
+    sg.add(new THREE.Mesh(dishGeo, silverMat));
+
+    const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.06, 16, 16), pm);
+    bulb.position.set(0, 0, -dishDepth * 0.4);
+    sg.add(bulb);
+  }
+}
+
+function buildLight(sp) {
+  lCnt++; const id = 'l' + lCnt; const kelvin = sp.kelvin ?? 5600; const col = kelvinToThreeColor(kelvin);
+  const cfg = { id, label: sp.label, color: col, kelvin, maxI: 20, defPow: sp.power, ps: sp.ps || [1.1, 1.4] };
+  const params = { hAngle: sp.hAngle, vAngle: sp.vAngle, dist: sp.dist, spread: sp.spread, pen: sp.pen ?? 0.45, blur: sp.blur ?? 6, decay: sp.decay ?? 1, diffOn: sp.diffOn ?? false, diffR: sp.diffR ?? 0.6, diffD: sp.diffD ?? 0.5, diffO: sp.diffO ?? 0.55, lType: sp.lType ?? 'octa' };
+  const defs = Object.assign({}, params);
+  const pos = p2p(params.hAngle, params.vAngle, params.dist);
+  const ang = THREE.MathUtils.degToRad(params.spread);
+  const dir = LT.clone().sub(pos).normalize();
+  const sg = new THREE.Group();
+  const pm = new THREE.MeshStandardMaterial({ color: 0x000000, emissive: cfg.color, emissiveIntensity: cfg.defPow, transparent: true, opacity: .9, roughness: 1, metalness: 0 });
+  sg.position.copy(pos); sg.lookAt(LT); scene.add(sg);
+  const leg = new THREE.Group(); leg.position.set(pos.x, 0, pos.z); scene.add(leg);
+  const spot = new THREE.SpotLight(cfg.color, cfg.defPow / 100 * cfg.maxI, 50, 0, 0, params.decay); spot.position.copy(pos);
+  const tgt = new THREE.Object3D(); tgt.position.copy(LT); scene.add(tgt); spot.target = tgt;
+  spot.castShadow = true; spot.shadow.mapSize.set(4096, 4096); spot.shadow.bias = -0.0004; spot.shadow.normalBias = 0.06; spot.shadow.camera.near = 0.5; spot.shadow.camera.far = 50; scene.add(spot);
+  const cone = new THREE.Mesh(new THREE.ConeGeometry(1, 1, 28, 1, true), new THREE.MeshBasicMaterial({ color: cfg.color, transparent: true, opacity: .05, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending }));
+  scene.add(cone);
+  const diffMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: params.diffO, side: THREE.DoubleSide, depthWrite: false });
+  const diffRingMat = new THREE.MeshBasicMaterial({ color: 0xaaaaaa, transparent: true, opacity: .6, side: THREE.DoubleSide });
+  const diffGroup = new THREE.Group(); diffGroup.add(new THREE.Mesh(new THREE.CircleGeometry(params.diffR, 48), diffMat), new THREE.Mesh(new THREE.RingGeometry(params.diffR, params.diffR + .018, 48), diffRingMat));
+  scene.add(diffGroup);
+  lightObjects[id] = { spot, pm, cone, sg, leg, cfg, params, defs, curPow: cfg.defPow, diffGroup, diffMat, diffRingMat, areaSpots: [], right: new THREE.Vector3(), upDir: new THREE.Vector3() };
+  updateLP(id); return id;
+}
+
+function updateLP(id) {
+  const o = lightObjects[id];
+  const { params, sg, leg, spot, cone, diffGroup, diffMat, cfg } = o;
+  const pos = p2p(params.hAngle, params.vAngle, params.dist);
+  const ang = THREE.MathUtils.degToRad(params.spread);
+  const dir = LT.clone().sub(pos).normalize();
+
+  sg.position.copy(pos);
+  sg.lookAt(LT);
+
+  buildStudioLightHeadMesh(sg, params.lType, cfg, params, o.pm);
+
+  const lh = Math.max(0.05, pos.y);
+  buildStudioStandMesh(leg, lh);
+  leg.position.set(pos.x, 0, pos.z);
+
+  spot.position.copy(pos);
+  spot.distance = 50;
+  if (params.lType === 'hard') {
+    spot.angle = Math.min(ang, THREE.MathUtils.degToRad(30));
+    spot.penumbra = 0.05;
+  } else {
+    spot.angle = ang;
+    spot.penumbra = params.pen;
+  }
+  spot.decay = params.decay;
+  spot.shadow.radius = params.blur * 0.5 + 1;
+  spot.shadow.normalBias = 0.06;
+
+  cone.geometry.dispose();
+  const bl = pos.distanceTo(LT), br = Math.tan(ang) * bl;
+  const ng = new THREE.ConeGeometry(br, bl, 28, 1, true);
+  ng.translate(0, -bl / 2, 0);
+  cone.geometry = ng;
+  cone.quaternion.copy(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, -1, 0), dir));
+  cone.position.copy(pos);
+  cone.visible = beams && spot.visible && !equipHidden;
+
+  const dpos = pos.clone().lerp(LT, params.diffD);
+  diffGroup.position.copy(dpos);
+  diffGroup.lookAt(pos);
+  diffGroup.children[0].geometry.dispose();
+  diffGroup.children[0].geometry = new THREE.CircleGeometry(params.diffR, 48);
+  diffGroup.children[1].geometry.dispose();
+  diffGroup.children[1].geometry = new THREE.RingGeometry(params.diffR, params.diffR + .018, 48);
+  diffMat.opacity = params.diffO;
+  diffGroup.visible = params.diffOn && !equipHidden && spot.visible;
+  _updateAreaSpots(id);
+  if (window.syncPathTracer) window.syncPathTracer(true);
+}
 
 function syncLDP(){if(!activeId||!lightObjects[activeId])return;const o=lightObjects[activeId];const{params,cfg}=o;document.getElementById('cHA').value=params.hAngle;document.getElementById('vHA').textContent=params.hAngle+'°';document.getElementById('cVA').value=params.vAngle;document.getElementById('vVA').textContent=params.vAngle+'°';document.getElementById('cDist').value=params.dist;document.getElementById('vDist').textContent=params.dist.toFixed(1)+'m';document.getElementById('cSpread').value=params.spread;document.getElementById('vSpread').textContent=params.spread+'°';document.getElementById('cPen').value=params.pen;document.getElementById('vPen').textContent=params.pen.toFixed(2);document.getElementById('cBlur').value=params.blur;document.getElementById('vBlur').textContent=params.blur.toFixed(1);document.getElementById('cDecay').value=params.decay;document.getElementById('vDecay').textContent=params.decay.toFixed(1);document.getElementById('cDiffOn').checked=params.diffOn;document.getElementById('diffControls').classList.toggle('disabled',!params.diffOn);document.getElementById('cDiffR').value=params.diffR;document.getElementById('vDiffR').textContent=params.diffR.toFixed(2)+'m';document.getElementById('cDiffD').value=params.diffD;document.getElementById('vDiffD').textContent=Math.round(params.diffD*100)+'%';document.getElementById('cDiffO').value=params.diffO;document.getElementById('vDiffO').textContent=params.diffO.toFixed(2);document.getElementById('cLightType').value=params.lType;const hx='#'+cfg.color.getHexString();document.getElementById('ldpDot').style.cssText='background:'+hx+';color:'+hx;document.getElementById('ldpName').textContent=cfg.label;}
-function openLDP(id){activeId=id;ldp.classList.add('visible');syncLDP();document.querySelectorAll('.light-card').forEach(c=>c.classList.toggle('active',c.dataset.id===id));}
-function closeLDP(){activeId=null;ldp.classList.remove('visible');document.querySelectorAll('.light-card').forEach(c=>c.classList.remove('active'));}
+function openLDP(id) {
+  activeId = id;
+  ldp.classList.add('visible');
+  if (document.getElementById('toggleLDP')) document.getElementById('toggleLDP').classList.add('active');
+  syncLDP();
+  updateLDPPosition();
+  updateDownloadButtonsVisibility();
+  document.querySelectorAll('.light-card').forEach(c => c.classList.toggle('active', c.dataset.id === id));
+}
+function closeLDP() {
+  activeId = null;
+  ldp.classList.remove('visible');
+  ldp.style.top = '56px';
+  ldp.style.maxHeight = '';
+  updateDownloadButtonsVisibility();
+  if (document.getElementById('toggleLDP')) document.getElementById('toggleLDP').classList.remove('active');
+  document.querySelectorAll('.light-card').forEach(c => c.classList.remove('active'));
+}
 document.getElementById('ldpClose').addEventListener('click',closeLDP);
 [['cHA','vHA','hAngle','°'],['cVA','vVA','vAngle','°'],['cDist','vDist','dist','m'],['cSpread','vSpread','spread','°'],['cPen','vPen','pen',''],['cBlur','vBlur','blur',''],['cDecay','vDecay','decay','']].forEach(([ci,vi,pk,u])=>{document.getElementById(ci).addEventListener('input',()=>{if(!activeId||!lightObjects[activeId])return;const v=+document.getElementById(ci).value;lightObjects[activeId].params[pk]=v;document.getElementById(vi).textContent=u==='m'?v.toFixed(1)+'m':u==='°'?v+'°':u===''?v:v.toFixed(2);updateLP(activeId);});});
 if (document.getElementById('cLightType')) {
@@ -3018,7 +3636,25 @@ if (document.getElementById('cLightType')) {
   });
 }
 
-document.getElementById('cDiffOn').addEventListener('change',e=>{if(!activeId||!lightObjects[activeId])return;lightObjects[activeId].params.diffOn=e.target.checked;document.getElementById('diffControls').classList.toggle('disabled',!e.target.checked);updateLP(activeId);});
+document.getElementById('cDiffOn').addEventListener('change', e => {
+  if (!activeId || !lightObjects[activeId]) return;
+  const on = e.target.checked;
+  lightObjects[activeId].params.diffOn = on;
+  document.getElementById('diffControls').classList.toggle('disabled', !on);
+  updateLP(activeId);
+
+  const card = document.querySelector('.light-card[data-id="' + activeId + '"]');
+  if (card) {
+    const btns = card.querySelectorAll('.card-action-btn');
+    if (btns && btns.length >= 3) {
+      const diffBtn = btns[2];
+      diffBtn.textContent = '🌫️ ' + t('Yumuşatıcı') + (on ? ' (Açık)' : ' (Kapalı)');
+      diffBtn.style.borderColor = on ? 'var(--amber)' : 'rgba(255,255,255,.1)';
+      diffBtn.style.color = on ? 'var(--amber)' : 'var(--text-dim)';
+      diffBtn.style.background = on ? 'rgba(212,145,47,.12)' : 'none';
+    }
+  }
+});
 ['cDiffR','cDiffD','cDiffO'].forEach(eid=>{document.getElementById(eid).addEventListener('input',()=>{if(!activeId||!lightObjects[activeId])return;const p=lightObjects[activeId].params;p.diffR=+document.getElementById('cDiffR').value;p.diffD=+document.getElementById('cDiffD').value;p.diffO=+document.getElementById('cDiffO').value;document.getElementById('vDiffR').textContent=p.diffR.toFixed(2)+'m';document.getElementById('vDiffD').textContent=Math.round(p.diffD*100)+'%';document.getElementById('vDiffO').textContent=p.diffO.toFixed(2);updateLP(activeId);});});
 document.getElementById('ldpReset').addEventListener('click',()=>{if(!activeId||!lightObjects[activeId])return;Object.assign(lightObjects[activeId].params,lightObjects[activeId].defs);syncLDP();updateLP(activeId);});
 
@@ -3110,7 +3746,173 @@ function updTitle(){
     });
   }
 }
-function buildCard(id){const o=lightObjects[id];const hx='#'+o.cfg.color.getHexString();const card=document.createElement('div');card.className='light-card';card.dataset.id=id;const head=document.createElement('div');head.className='light-card-head';const dot=document.createElement('span');dot.className='dot';dot.style.background=hx;dot.style.color=hx;const ni=document.createElement('input');ni.type='text';ni.className='light-name';ni.value=t(o.cfg.label);ni.addEventListener('click',e=>e.stopPropagation());ni.addEventListener('input',e=>{o.cfg.label=e.target.value;if(activeId===id)document.getElementById('ldpName').textContent=e.target.value;});ni.addEventListener('keydown',e=>{if(e.key==='Enter')ni.blur();});const sl=document.createElement('label');sl.className='switch';sl.addEventListener('click',e=>e.stopPropagation());const si=document.createElement('input');si.type='checkbox';si.checked=true;const ss=document.createElement('span');ss.className='slider-toggle';sl.append(si,ss);head.append(dot,ni,sl);const ar=document.createElement('div');ar.className='card-actions';const db=document.createElement('button');db.className='card-action-btn';db.textContent='📋 '+t('Kopya');const dlb=document.createElement('button');dlb.className='card-action-btn del';dlb.textContent='🗑 '+t('Sil');db.addEventListener('click',e=>{e.stopPropagation();dupL(id);});dlb.addEventListener('click',e=>{e.stopPropagation();delL(id);});ar.append(db,dlb);const pr=document.createElement('div');pr.className='power-row';const ps2=document.createElement('input');ps2.type='range';ps2.min=0;ps2.max=100;ps2.value=o.cfg.defPow;ps2.addEventListener('click',e=>e.stopPropagation());const pv=document.createElement('span');pv.className='power-value';pv.textContent=o.cfg.defPow+'%';pr.append(ps2,pv);const kr=document.createElement('div');kr.className='kelvin-row';const klRow=document.createElement('div');klRow.className='kelvin-label-row';const klLabel=document.createElement('span');klLabel.className='kelvin-label';klLabel.textContent='🌡️ '+t('Renk Sıcaklığı');const klVal=document.createElement('span');klVal.className='kelvin-val';klVal.textContent=(o.cfg.kelvin||5600)+'K';klRow.append(klLabel,klVal);const kt=document.createElement('div');kt.className='kelvin-track';const ks=document.createElement('input');ks.type='range';ks.min=1000;ks.max=10000;ks.step=50;ks.value=o.cfg.kelvin||5600;ks.addEventListener('click',e=>e.stopPropagation());ks.addEventListener('input',e=>{e.stopPropagation();const K=+e.target.value;o.cfg.kelvin=K;klVal.textContent=K+'K';const col=kelvinToThreeColor(K);o.cfg.color=col;o.spot.color.copy(col);if(o.pm.isMeshStandardMaterial)o.pm.emissive.copy(col);else o.pm.color.copy(col);o.cone.material.color.copy(col);o.areaSpots.forEach(as=>as.spot.color.copy(col));const hx2='#'+col.getHexString();dot.style.background=hx2;dot.style.color=hx2;if(activeId===id)document.getElementById('ldpDot').style.cssText='background:'+hx2+';color:'+hx2;});kt.append(ks);kr.append(klRow,kt);card.append(head,ar,pr,kr);card.addEventListener('click',()=>openLDP(id));si.addEventListener('change',e=>{const on=e.target.checked,ob=lightObjects[id];if(!ob)return;ob.spot.visible=on;ob.cone.visible=on&&beams&&!equipHidden;ob.sg.visible=on&&!equipHidden;ob.leg.visible=on&&!equipHidden;ob.diffGroup.visible=on&&ob.params.diffOn&&!equipHidden;ob.areaSpots.forEach(as=>{as.spot.visible=on&&ob.params.diffOn;});if(on){if(ob.pm.isMeshStandardMaterial)ob.pm.emissive.set(ob.cfg.color);else ob.pm.color.set(ob.cfg.color);ob.pm.opacity=.2+(ob.curPow/100)*.7;}else{if(ob.pm.isMeshStandardMaterial)ob.pm.emissive.set(0x000000);else ob.pm.color.set(0x222222);ob.pm.opacity=.5;}});ps2.addEventListener('input',e=>{const val=+e.target.value,ob=lightObjects[id];if(!ob)return;ob.curPow=val;if(ob.spot.visible)ob.pm.opacity=.2+(val/100)*.7;pv.textContent=val+'%';_updateAreaSpots(id);});return card;}
+function buildCard(id) {
+  const o = lightObjects[id];
+  const hx = '#' + o.cfg.color.getHexString();
+  const card = document.createElement('div');
+  card.className = 'light-card';
+  card.dataset.id = id;
+
+  const head = document.createElement('div');
+  head.className = 'light-card-head';
+
+  const dot = document.createElement('span');
+  dot.className = 'dot';
+  dot.style.background = hx;
+  dot.style.color = hx;
+
+  const ni = document.createElement('input');
+  ni.type = 'text';
+  ni.className = 'light-name';
+  ni.value = t(o.cfg.label);
+  ni.addEventListener('click', e => e.stopPropagation());
+  ni.addEventListener('input', e => {
+    o.cfg.label = e.target.value;
+    if (activeId === id) document.getElementById('ldpName').textContent = e.target.value;
+  });
+  ni.addEventListener('keydown', e => { if (e.key === 'Enter') ni.blur(); });
+
+  const sl = document.createElement('label');
+  sl.className = 'switch';
+  sl.addEventListener('click', e => e.stopPropagation());
+  const si = document.createElement('input');
+  si.type = 'checkbox';
+  si.checked = o.spot.visible;
+  const ss = document.createElement('span');
+  ss.className = 'slider-toggle';
+  sl.append(si, ss);
+  head.append(dot, ni, sl);
+
+  const ar = document.createElement('div');
+  ar.className = 'card-actions';
+  const db = document.createElement('button');
+  db.className = 'card-action-btn';
+  db.textContent = '📋 ' + t('Kopya');
+  const dlb = document.createElement('button');
+  dlb.className = 'card-action-btn del';
+  dlb.textContent = '🗑 ' + t('Sil');
+  db.addEventListener('click', e => { e.stopPropagation(); dupL(id); });
+  dlb.addEventListener('click', e => { e.stopPropagation(); delL(id); });
+  ar.append(db, dlb);
+
+  // Yumuşatıcı (Soft Diffuser Screen) Toggle Row
+  const diffRow = document.createElement('div');
+  diffRow.className = 'card-actions';
+  diffRow.style.marginTop = '4px';
+
+  const diffBtn = document.createElement('button');
+  diffBtn.className = 'card-action-btn' + (o.params.diffOn ? ' active' : '');
+  diffBtn.style.width = '100%';
+  diffBtn.style.fontSize = '9.5px';
+  diffBtn.style.padding = '4px 0';
+  diffBtn.style.fontWeight = '600';
+
+  function updateDiffBtnUI() {
+    const on = o.params.diffOn;
+    diffBtn.textContent = '🌫️ ' + t('Yumuşatıcı') + (on ? ' (Açık)' : ' (Kapalı)');
+    diffBtn.style.borderColor = on ? 'var(--amber)' : 'rgba(255,255,255,.1)';
+    diffBtn.style.color = on ? 'var(--amber)' : 'var(--text-dim)';
+    diffBtn.style.background = on ? 'rgba(212,145,47,.12)' : 'none';
+  }
+  updateDiffBtnUI();
+
+  diffBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    o.params.diffOn = !o.params.diffOn;
+    updateDiffBtnUI();
+    updateLP(id);
+    if (activeId === id && document.getElementById('cDiffOn')) {
+      document.getElementById('cDiffOn').checked = o.params.diffOn;
+      document.getElementById('diffControls').classList.toggle('disabled', !o.params.diffOn);
+    }
+  });
+  diffRow.appendChild(diffBtn);
+
+  const pr = document.createElement('div');
+  pr.className = 'power-row';
+  pr.style.marginTop = '6px';
+  const ps2 = document.createElement('input');
+  ps2.type = 'range'; ps2.min = 0; ps2.max = 100; ps2.value = o.cfg.defPow;
+  ps2.addEventListener('click', e => e.stopPropagation());
+  const pv = document.createElement('span');
+  pv.className = 'power-value';
+  pv.textContent = o.cfg.defPow + '%';
+  pr.append(ps2, pv);
+
+  const kr = document.createElement('div');
+  kr.className = 'kelvin-row';
+  const klRow = document.createElement('div');
+  klRow.className = 'kelvin-label-row';
+  const klLabel = document.createElement('span');
+  klLabel.className = 'kelvin-label';
+  klLabel.textContent = '🌡️ ' + t('Renk Sıcaklığı');
+  const klVal = document.createElement('span');
+  klVal.className = 'kelvin-val';
+  klVal.textContent = (o.cfg.kelvin || 5600) + 'K';
+  klRow.append(klLabel, klVal);
+
+  const kt = document.createElement('div');
+  kt.className = 'kelvin-track';
+  const ks = document.createElement('input');
+  ks.type = 'range'; ks.min = 1000; ks.max = 10000; ks.step = 50; ks.value = o.cfg.kelvin || 5600;
+  ks.addEventListener('click', e => e.stopPropagation());
+  ks.addEventListener('input', e => {
+    e.stopPropagation();
+    const K = +e.target.value;
+    o.cfg.kelvin = K;
+    klVal.textContent = K + 'K';
+    const col = kelvinToThreeColor(K);
+    o.cfg.color = col;
+    o.spot.color.copy(col);
+    if (o.pm.isMeshStandardMaterial) o.pm.emissive.copy(col);
+    else o.pm.color.copy(col);
+    o.cone.material.color.copy(col);
+    o.areaSpots.forEach(as => as.spot.color.copy(col));
+    const hx2 = '#' + col.getHexString();
+    dot.style.background = hx2;
+    dot.style.color = hx2;
+    if (activeId === id) document.getElementById('ldpDot').style.cssText = 'background:' + hx2 + ';color:' + hx2;
+  });
+  kt.append(ks);
+  kr.append(klRow, kt);
+
+  card.append(head, ar, diffRow, pr, kr);
+  card.addEventListener('click', () => openLDP(id));
+
+  si.addEventListener('change', e => {
+    const on = e.target.checked, ob = lightObjects[id];
+    if (!ob) return;
+    ob.spot.visible = on;
+    ob.cone.visible = on && beams && !equipHidden;
+    ob.sg.visible = on && !equipHidden;
+    ob.leg.visible = on && !equipHidden;
+    ob.diffGroup.visible = on && ob.params.diffOn && !equipHidden;
+    ob.areaSpots.forEach(as => { as.spot.visible = on && ob.params.diffOn; });
+    if (on) {
+      if (ob.pm.isMeshStandardMaterial) ob.pm.emissive.set(ob.cfg.color);
+      else ob.pm.color.set(ob.cfg.color);
+      ob.pm.opacity = .2 + (ob.curPow / 100) * .7;
+    } else {
+      if (ob.pm.isMeshStandardMaterial) ob.pm.emissive.set(0x000000);
+      else ob.pm.color.set(0x222222);
+      ob.pm.opacity = .5;
+    }
+    const mainCardToggle = document.querySelector('.light-card[data-id="' + id + '"] input[type="checkbox"]');
+    if (mainCardToggle) mainCardToggle.checked = on;
+    if (typeof drawDiagram === 'function') drawDiagram();
+  });
+
+  ps2.addEventListener('input', e => {
+    const val = +e.target.value, ob = lightObjects[id];
+    if (!ob) return;
+    ob.curPow = val;
+    if (ob.spot.visible) ob.pm.opacity = .2 + (val / 100) * .7;
+    pv.textContent = val + '%';
+    _updateAreaSpots(id);
+  });
+
+  return card;
+}
 function addDOM(id){const ab=pc.querySelector('.add-card');pc.insertBefore(buildCard(id),ab);pc.querySelector('.light-card[data-id="'+id+'"]').scrollIntoView({behavior:'smooth',block:'nearest',inline:'nearest'});}
 function delL(id){if(Object.keys(lightObjects).length<=1)return;if(activeId===id)closeLDP();destroyLight(id);const c=pc.querySelector('.light-card[data-id="'+id+'"]');if(c)c.remove();updTitle();}
 function dupL(id){const o=lightObjects[id];if(!o)return;const nid=buildLight({label:o.cfg.label+' Kopya',kelvin:o.cfg.kelvin||5600,power:o.curPow,hAngle:o.params.hAngle+20,vAngle:o.params.vAngle,dist:o.params.dist,spread:o.params.spread,pen:o.params.pen,blur:o.params.blur,decay:o.params.decay,diffOn:o.params.diffOn,diffR:o.params.diffR,diffD:o.params.diffD,diffO:o.params.diffO,ps:o.cfg.ps.slice()});addDOM(nid);updTitle();setTimeout(()=>openLDP(nid),80);}
@@ -3137,15 +3939,18 @@ document.querySelectorAll('.ind-btn').forEach(b=>b.addEventListener('click',()=>
 
 /* INIT Lights */
 const INIT=[
-  {label:'Ana Işık (Key)',kelvin:5600,power:80,hAngle:58,vAngle:47,dist:4.4,spread:35,pen:.45,blur:6,decay:1,diffOn:false,diffR:.6,diffD:.5,diffO:.55,ps:[1.3,1.7]},
-  {label:'Dolgu Işığı (Fill)',kelvin:4800,power:40,hAngle:-62,vAngle:28,dist:3.8,spread:42,pen:.65,blur:8,decay:1,diffOn:false,diffR:.7,diffD:.5,diffO:.55,ps:[1.0,1.3]},
-  {label:'Kenar Işığı (Rim)',kelvin:6500,power:60,hAngle:180,vAngle:52,dist:4.0,spread:30,pen:.35,blur:5,decay:1,diffOn:false,diffR:.5,diffD:.5,diffO:.55,ps:[1.2,.5]},
+  {label:'Ana Işık (Key)',kelvin:5600,power:90,hAngle:58,vAngle:47,dist:4.4,spread:55,pen:.45,blur:6,decay:1,diffOn:false,diffR:.6,diffD:.5,diffO:.55,ps:[1.3,1.7]},
+  {label:'Dolgu Işığı (Fill)',kelvin:4800,power:60,hAngle:-62,vAngle:28,dist:3.8,spread:65,pen:.65,blur:8,decay:1,diffOn:false,diffR:.7,diffD:.5,diffO:.55,ps:[1.0,1.3]},
+  {label:'Kenar Işığı (Rim)',kelvin:6500,power:80,hAngle:180,vAngle:52,dist:4.0,spread:50,pen:.35,blur:5,decay:1,diffOn:false,diffR:.5,diffD:.5,diffO:.55,ps:[1.2,.5]},
 ];
 INIT.forEach(s=>{const id=buildLight(s);pc.appendChild(buildCard(id));});
 const ab=document.createElement('div');ab.className='add-card';ab.innerHTML='<svg width="20" height="20" viewBox="0 0 20 20"><line x1="10" y1="4" x2="10" y2="16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="4" y1="10" x2="16" y2="10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span>'+t('Işık')+'<br>'+t('Ekle')+'</span>';ab.addEventListener('click',addL);pc.appendChild(ab);updTitle();
 document.getElementById('beamToggle').addEventListener('change',e=>{beams=e.target.checked;Object.values(lightObjects).forEach(o=>{o.cone.visible=beams&&o.spot.visible&&!equipHidden;});});
 document.getElementById('beamToggle2').addEventListener('change',e=>{beams=e.target.checked;document.getElementById('beamToggle').checked=e.target.checked;Object.values(lightObjects).forEach(o=>{o.cone.visible=beams&&o.spot.visible&&!equipHidden;});});
-document.getElementById('sheetPull').addEventListener('click',()=>document.getElementById('bottomSheet').classList.toggle('collapsed'));
+document.getElementById('sheetPull').addEventListener('click', () => {
+  document.getElementById('bottomSheet').classList.toggle('collapsed');
+  updateDownloadButtonsVisibility();
+});
 
 /* === EKİPMAN GİZLE BUTONU === */
 document.getElementById('hideEquipBtn').addEventListener('click',function(){
@@ -3312,143 +4117,203 @@ document.getElementById('sceneFileInput').addEventListener('change',e=>{const f=
 document.getElementById('btnShare').addEventListener('click',()=>{try{const b64=btoa(unescape(encodeURIComponent(getSceneJSON())));const url=location.href.split('#')[0]+'#scene='+b64;navigator.clipboard.writeText(url).then(()=>toast(t('Bağlantı kopyalandı ✓'))).catch(()=>toast(t('URL oluşturuldu')));} catch(e){toast(t('Paylaşım hatası'));}});
 (function(){const h=location.hash;if(!h.startsWith('#scene='))return;try{const json=decodeURIComponent(escape(atob(h.slice(7))));setTimeout(()=>loadSceneJSON(json),300);}catch(e){}})();
 
-/* ═══ AYDINLATMA DIYAGRAMI ═══ */
-const diagCanvas=document.getElementById('diagCanvas');
-let diagDragging=null;
-function drawDiagram(ctx=null, isExport=false){
-  if(!ctx) ctx = diagCanvas.getContext('2d');
-  const W=ctx.canvas.width;
-  const H=ctx.canvas.height;
-  const CX=W/2, CY=H/2;
-  const R=Math.min(W,H)/2 - (isExport?40:20);
+/* ═══ AYDINLATMA DİYAGRAMI (2D İNTERAKTİF SÜRÜKLE-BIRAK) ═══ */
+const diagCanvas = document.getElementById('diagCanvas');
+let diagDragging = null;
+
+function drawDiagram(ctx = null, isExport = false) {
+  if (!ctx) ctx = diagCanvas.getContext('2d');
+  const W = ctx.canvas.width;
+  const H = ctx.canvas.height;
+  const CX = W / 2, CY = H / 2;
+  const R = Math.min(W, H) / 2 - (isExport ? 40 : 25);
   const maxDist = 8;
   const scale = R / maxDist;
-  
-  ctx.clearRect(0,0,W,H);
-  
-  // Arkaplan kılavuz çizgileri
-  if(isExport){
-    ctx.strokeStyle='rgba(0,0,0,0.08)';
-    ctx.lineWidth=2;
-    [2,4,6,8].forEach(d=>{
-      ctx.beginPath();ctx.arc(CX,CY,d*scale,0,Math.PI*2);ctx.stroke();
-      ctx.fillStyle='rgba(0,0,0,0.4)';
-      ctx.font='16px Arial';
-      ctx.textAlign='center'; ctx.textBaseline='bottom';
-      ctx.fillText(`${d*100}cm`, CX, CY-d*scale-5);
+
+  ctx.clearRect(0, 0, W, H);
+
+  // Arkaplan Kılavuz Çizgileri ve Yönler
+  if (isExport) {
+    ctx.strokeStyle = 'rgba(0,0,0,0.08)';
+    ctx.lineWidth = 2;
+    [2, 4, 6, 8].forEach(d => {
+      ctx.beginPath(); ctx.arc(CX, CY, d * scale, 0, Math.PI * 2); ctx.stroke();
+      ctx.fillStyle = 'rgba(0,0,0,0.4)';
+      ctx.font = '16px Inter, sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+      ctx.fillText(`${d * 100}cm`, CX, CY - d * scale - 5);
     });
-    // Merkez çaprazlar
-    ctx.beginPath();ctx.moveTo(CX, CY-R);ctx.lineTo(CX, CY+R);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(CX-R, CY);ctx.lineTo(CX+R, CY);ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(CX, CY - R); ctx.lineTo(CX, CY + R); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(CX - R, CY); ctx.lineTo(CX + R, CY); ctx.stroke();
   } else {
-    ctx.strokeStyle='rgba(255,255,255,0.1)';
-    ctx.lineWidth=1;
-    [2,4,6,8].forEach(d=>{
-      ctx.beginPath();ctx.arc(CX,CY,d*scale,0,Math.PI*2);ctx.stroke();
+    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+    ctx.lineWidth = 1;
+    [2, 4, 6, 8].forEach(d => {
+      ctx.beginPath(); ctx.arc(CX, CY, d * scale, 0, Math.PI * 2); ctx.stroke();
+      ctx.fillStyle = 'rgba(255,255,255,0.25)';
+      ctx.font = '9px Inter, sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+      ctx.fillText(`${d}m`, CX, CY - d * scale - 2);
     });
+
+    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+    ctx.beginPath(); ctx.moveTo(CX, CY - R); ctx.lineTo(CX, CY + R); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(CX - R, CY); ctx.lineTo(CX + R, CY); ctx.stroke();
+
+    ctx.fillStyle = 'rgba(212,145,47,0.75)';
+    ctx.font = 'bold 9px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('ÖN', CX, CY + R + 14);
+    ctx.fillText('ARKA', CX, CY - R - 4);
+    ctx.fillText('SAĞ', CX + R + 14, CY + 3);
+    ctx.fillText('SOL', CX - R - 14, CY + 3);
   }
-  
+
   // Ürün (Merkez)
-  ctx.fillStyle='#d4912f';
+  ctx.fillStyle = '#d4912f';
   ctx.beginPath();
-  ctx.arc(CX,CY,isExport?15:6,0,Math.PI*2);
+  ctx.arc(CX, CY, isExport ? 15 : 6, 0, Math.PI * 2);
   ctx.fill();
-  
-  // Işıklar
-  Object.entries(lightObjects).forEach(([id,o])=>{
-    if(!o.spot.visible) return;
-    const hr = o.params.hAngle * Math.PI/180;
+
+  // Işık Düğümleri
+  Object.entries(lightObjects).forEach(([id, o]) => {
+    if (!o.spot.visible) return;
+    const hr = o.params.hAngle * Math.PI / 180;
     const d = o.params.dist;
-    const lx = CX + Math.sin(hr)*d*scale;
-    const ly = CY + Math.cos(hr)*d*scale;
-    
-    // Çizgi
-    ctx.strokeStyle=isExport?'rgba(0,0,0,0.2)':'rgba(255,255,255,0.3)';
-    ctx.setLineDash([4,4]);
-    ctx.beginPath();ctx.moveTo(CX,CY);ctx.lineTo(lx,ly);ctx.stroke();
+    const lx = CX + Math.sin(hr) * d * scale;
+    const ly = CY + Math.cos(hr) * d * scale;
+    const isSelected = activeId === id || diagDragging === id;
+
+    if (isSelected && !isExport) {
+      ctx.fillStyle = 'rgba(212,145,47,0.22)';
+      ctx.beginPath(); ctx.arc(lx, ly, 16, 0, Math.PI * 2); ctx.fill();
+
+      ctx.strokeStyle = '#d4912f';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(lx, ly, 11, 0, Math.PI * 2); ctx.stroke();
+    }
+
+    ctx.strokeStyle = isSelected ? '#d4912f' : (isExport ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.25)');
+    ctx.lineWidth = isSelected ? 1.8 : 1;
+    ctx.setLineDash(isSelected ? [5, 3] : [4, 4]);
+    ctx.beginPath(); ctx.moveTo(CX, CY); ctx.lineTo(lx, ly); ctx.stroke();
     ctx.setLineDash([]);
-    
-    // Nokta
+
     const c = o.cfg.color;
-    ctx.fillStyle = `rgb(${Math.round(c.r*255)},${Math.round(c.g*255)},${Math.round(c.b*255)})`;
+    ctx.fillStyle = `rgb(${Math.round(c.r * 255)},${Math.round(c.g * 255)},${Math.round(c.b * 255)})`;
     ctx.beginPath();
-    ctx.arc(lx,ly,isExport?14:7,0,Math.PI*2);
+    ctx.arc(lx, ly, isExport ? 14 : 7, 0, Math.PI * 2);
     ctx.fill();
-    ctx.strokeStyle=isExport?'#000':(diagDragging===id?'#d4912f':'#fff');
-    ctx.lineWidth=isExport?3:2;
+
+    ctx.strokeStyle = isSelected ? '#ffffff' : (isExport ? '#000000' : '#888888');
+    ctx.lineWidth = isExport ? 3 : 2;
     ctx.stroke();
-    
-    // Etiket
-    ctx.fillStyle = isExport?'#000':'#fff';
-    ctx.font = isExport?'bold 24px Arial':'10px Arial';
+
+    ctx.fillStyle = isSelected ? '#d4912f' : (isExport ? '#000000' : '#ffffff');
+    ctx.font = isExport ? 'bold 24px Inter, sans-serif' : (isSelected ? 'bold 11px Inter, sans-serif' : '10px Inter, sans-serif');
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(o.cfg.label, lx, ly - (isExport?28:15));
-    
-    // Mesafe ve Açı (sadece exportta mesafe)
-    if(isExport){
-      ctx.fillStyle = '#555';
-      ctx.font = '18px Arial';
-      ctx.fillText(`${Math.round(d*100)}cm / ${Math.round(o.params.hAngle)}°`, lx, ly + 28);
+    ctx.fillText(o.cfg.label, lx, ly - (isExport ? 28 : 15));
+
+    if (!isExport && isSelected) {
+      const badgeText = `${o.params.hAngle}° · ${o.params.dist.toFixed(1)}m`;
+      ctx.font = 'bold 9px Inter, sans-serif';
+      const tw = ctx.measureText(badgeText).width;
+
+      ctx.fillStyle = 'rgba(28,26,29,0.92)';
+      ctx.strokeStyle = '#d4912f';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.roundRect(lx - tw / 2 - 5, ly + 11, tw + 10, 15, 4);
+      ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(badgeText, lx, ly + 18);
     }
   });
 }
 
-function updateDiagCanvasSize(){
-  const w=diagCanvas.offsetWidth;
-  diagCanvas.width=w;diagCanvas.height=w;
+function updateDiagCanvasSize() {
+  const w = diagCanvas.offsetWidth;
+  diagCanvas.width = w; diagCanvas.height = w;
   drawDiagram();
 }
-window.addEventListener('resize',()=>{
-  if(document.getElementById('diagramPanel').classList.contains('visible')) updateDiagCanvasSize();
+window.addEventListener('resize', () => {
+  if (document.getElementById('diagramPanel').classList.contains('visible')) updateDiagCanvasSize();
 });
-function getDiagPos(e){
-  const r=diagCanvas.getBoundingClientRect();
-  return {x:e.clientX-r.left, y:e.clientY-r.top};
+function getDiagPos(e) {
+  const r = diagCanvas.getBoundingClientRect();
+  return { x: e.clientX - r.left, y: e.clientY - r.top };
 }
-diagCanvas.addEventListener('pointerdown', e=>{
-  const {x,y}=getDiagPos(e);
-  const W=diagCanvas.width, H=diagCanvas.height;
-  const CX=W/2, CY=H/2;
-  const scale = (Math.min(W,H)/2 - 20) / 8;
-  let closest=null, minDist=999;
-  Object.entries(lightObjects).forEach(([id,o])=>{
-    if(!o.spot.visible) return;
-    const hr = o.params.hAngle * Math.PI/180;
-    const lx = CX + Math.sin(hr)*o.params.dist*scale;
-    const ly = CY + Math.cos(hr)*o.params.dist*scale;
-    const distSq = (x-lx)**2 + (y-ly)**2;
-    if(distSq<20*20 && distSq<minDist){ minDist=distSq; closest=id; }
+diagCanvas.addEventListener('pointerdown', e => {
+  const { x, y } = getDiagPos(e);
+  const W = diagCanvas.width, H = diagCanvas.height;
+  const CX = W / 2, CY = H / 2;
+  const scale = (Math.min(W, H) / 2 - 25) / 8;
+  let closest = null, minDist = 999;
+  Object.entries(lightObjects).forEach(([id, o]) => {
+    if (!o.spot.visible) return;
+    const hr = o.params.hAngle * Math.PI / 180;
+    const lx = CX + Math.sin(hr) * o.params.dist * scale;
+    const ly = CY + Math.cos(hr) * o.params.dist * scale;
+    const distSq = (x - lx) ** 2 + (y - ly) ** 2;
+    if (distSq < 24 * 24 && distSq < minDist) { minDist = distSq; closest = id; }
   });
-  if(closest){
-    diagDragging=closest;
+  if (closest) {
+    diagDragging = closest;
+    openLDP(closest);
     diagCanvas.setPointerCapture(e.pointerId);
     e.preventDefault();
     drawDiagram();
   }
 });
-window.addEventListener('pointermove', e=>{
-  if(!diagDragging||!lightObjects[diagDragging]) return;
-  const {x,y}=getDiagPos(e);
-  const W=diagCanvas.width, H=diagCanvas.height;
-  const CX=W/2, CY=H/2;
-  const scale = (Math.min(W,H)/2 - 20) / 8;
-  const dx = x-CX, dy = y-CY;
-  let dist = Math.sqrt(dx*dx + dy*dy) / scale;
-  dist = clamp(dist, 2, 8);
-  let angle = Math.atan2(dx, dy) * 180/Math.PI;
-  const o = lightObjects[diagDragging];
-  o.params.hAngle = Math.round(angle);
-  o.params.dist = dist;
-  updateLP(diagDragging);
-  if(activeId===diagDragging) syncLDP();
-  drawDiagram();
+window.addEventListener('pointermove', e => {
+  const { x, y } = getDiagPos(e);
+  const W = diagCanvas.width, H = diagCanvas.height;
+  const CX = W / 2, CY = H / 2;
+  const scale = (Math.min(W, H) / 2 - 25) / 8;
+
+  if (diagDragging && lightObjects[diagDragging]) {
+    const dx = x - CX, dy = y - CY;
+    let dist = Math.sqrt(dx * dx + dy * dy) / scale;
+    dist = clamp(dist, 1.5, 8);
+    let angle = Math.atan2(dx, dy) * 180 / Math.PI;
+    const o = lightObjects[diagDragging];
+    o.params.hAngle = Math.round(angle);
+    o.params.dist = dist;
+    updateLP(diagDragging);
+    if (activeId === diagDragging) syncLDP();
+    drawDiagram();
+  } else if (document.getElementById('diagramPanel').classList.contains('visible')) {
+    let isHover = false;
+    Object.entries(lightObjects).forEach(([id, o]) => {
+      if (!o.spot.visible) return;
+      const hr = o.params.hAngle * Math.PI / 180;
+      const lx = CX + Math.sin(hr) * o.params.dist * scale;
+      const ly = CY + Math.cos(hr) * o.params.dist * scale;
+      if ((x - lx) ** 2 + (y - ly) ** 2 < 20 * 20) isHover = true;
+    });
+    diagCanvas.style.cursor = isHover ? 'grab' : 'crosshair';
+  }
 });
-window.addEventListener('pointerup', ()=>{
-  if(diagDragging){ diagDragging=null; drawDiagram(); }
+window.addEventListener('pointerup', () => {
+  if (diagDragging) { diagDragging = null; drawDiagram(); }
 });
-window.addEventListener('pointercancel', ()=>{
-  if(diagDragging){ diagDragging=null; drawDiagram(); }
+window.addEventListener('pointercancel', () => {
+  if (diagDragging) { diagDragging = null; drawDiagram(); }
+});
+
+/* Vizör & Altın Oran Kılavuz Çizgileri Toggle */
+let gridOverlayVisible = false;
+document.getElementById('gridOverlayBtn').addEventListener('click', function() {
+  gridOverlayVisible = !gridOverlayVisible;
+  const overlay = document.getElementById('gridOverlay');
+  const btn = document.getElementById('gridOverlayBtn');
+  overlay.classList.toggle('visible', gridOverlayVisible);
+  btn.classList.toggle('active', gridOverlayVisible);
+  toast(gridOverlayVisible ? 'Vizör / Izgara Açıldı 📐' : 'Vizör / Izgara Kapatıldı');
 });
 
 document.getElementById('btnExportDiag').addEventListener('click', async()=>{
@@ -3716,6 +4581,16 @@ function animate(t, frame){
   const dt=(t-lastTime)/1000;lastTime=t;
   if(turntableActive){camTh+=turntableDir*turntableSpeed*(Math.PI*2/60)*dt;updateCam();}
   if(cinematicMode){camTh+=cinematicSpeed*dt;updateCam();}
+
+  // Wow 360 Turntable rotation
+  if (document.getElementById('wowTurntableToggle') && document.getElementById('wowTurntableToggle').checked) {
+    const spd = parseFloat(document.getElementById('ctrlWowTtSpeed').value) || 1.0;
+    if (typeof mainProductWrapper !== 'undefined' && mainProductWrapper) mainProductWrapper.rotation.y += 0.008 * spd;
+    if (typeof wowTtMesh !== 'undefined' && wowTtMesh) wowTtMesh.rotation.y += 0.008 * spd;
+  }
+
+
+
   if(trans){trans.t+=.045;const tt=Math.min(1,trans.t);const e=tt<.5?2*tt*tt:-1+(4-2*tt)*tt;camTh=lerp(trans.fTh,trans.tTh,e);camPh=lerp(trans.fPh,trans.tPh,e);camR=lerp(trans.fR,trans.tR,e);updateCam();if(tt>=1)trans=null;}
   if(lightPulseSpeed>0 && !isHologram){pulseT+=dt*lightPulseSpeed;const pulse=.8+.2*Math.sin(pulseT*Math.PI*2);Object.values(lightObjects).forEach(o=>{if(o.spot.visible)o.spot.intensity=((o.curPow/100)*o.cfg.maxI)*(1-(o.params.diffOn?o.params.diffO*.7:0))*pulse;});}
   if(mirrorActive&&cubeCamera2){fl.visible=false;if(mirrorFloorMesh)mirrorFloorMesh.visible=false;cubeCamera2.update(renderer,scene);fl.visible=false;if(mirrorFloorMesh)mirrorFloorMesh.visible=true;}
@@ -3768,8 +4643,13 @@ function animate(t, frame){
     renderer.render(scene, camera);
   } else if (window.isPathTracing && window.pathTracer) {
     window.pathTracer.renderSample();
+    const samples = Math.floor(window.pathTracer.samples || 0);
+    const btn = document.getElementById('pathTracerToggle');
+    if (btn && samples > 0) {
+      btn.innerHTML = `✨ Işın İzleme (AÇIK - ${samples} Örnek)`;
+    }
   } else {
-    renderer.render(scene,camera);
+    renderer.render(scene, camera);
   }
 }
 resize();updateCam();
@@ -3832,16 +4712,7 @@ function buildGradientTexture(c1,c2,vertical){
   const tex=new THREE.CanvasTexture(canvas);
   tex.needsUpdate=true;return tex;
 }
-function applyGradient(vertical){
-  const c1=document.getElementById('gradTop').value;
-  const c2=document.getElementById('gradBot').value;
-  scene.background=buildGradientTexture(c1,c2,vertical);
-  toast(t('🌈 Gradient uygulandı'));
-}
-document.getElementById('gradApplyV').addEventListener('click',()=>applyGradient(true));
-document.getElementById('gradApplyH').addEventListener('click',()=>applyGradient(false));
-document.getElementById('gradClear').addEventListener('click',()=>{scene.background=new THREE.Color(0x121113);document.querySelectorAll('.bg-swatch').forEach(s=>s.classList.toggle('active',s.dataset.bg==='studio'));toast(t('Gradient kaldırıldı'));});
-['gradTop','gradBot'].forEach(id=>document.getElementById(id).addEventListener('input',()=>{}));
+
 
 /* ── #27 Arka Plan Resim Yükleme ── */
 let bgImageTexture=null,bgPlane=null;
@@ -3989,18 +4860,7 @@ document.getElementById('floorImgRemoveBtn').addEventListener('click',()=>{
   toast(t('Zemin görseli kaldırıldı'));
 });
 
-/* ── #28 Gölge Rengi ── */
-let shadowOverlayMesh=null;
-function buildShadowOverlay(color,opacity){
-  if(shadowOverlayMesh){scene.remove(shadowOverlayMesh);shadowOverlayMesh.geometry.dispose();shadowOverlayMesh.material.dispose();shadowOverlayMesh=null;}
-  if(opacity<0.01)return;
-  const mat=new THREE.MeshBasicMaterial({color:new THREE.Color(color),transparent:true,opacity,blending:THREE.MultiplyBlending,depthWrite:false});
-  shadowOverlayMesh=new THREE.Mesh(new THREE.PlaneGeometry(18,18),mat);
-  shadowOverlayMesh.rotation.x=-Math.PI/2;shadowOverlayMesh.position.y=0.001;
-  scene.add(shadowOverlayMesh);
-}
-document.getElementById('shadowColorPick').addEventListener('input',()=>buildShadowOverlay(document.getElementById('shadowColorPick').value,+document.getElementById('ctrlShadowOpacity').value));
-document.getElementById('ctrlShadowOpacity').addEventListener('input',e=>{document.getElementById('vShadowOpacity').textContent=parseFloat(e.target.value).toFixed(2);buildShadowOverlay(document.getElementById('shadowColorPick').value,+e.target.value);});
+
 
 /* ── #2 SSS Materyaller ── */
 const SSS_PRESETS={
@@ -4032,72 +4892,7 @@ function clearSSS(){
 document.querySelectorAll('.sss-btn').forEach(b=>b.addEventListener('click',()=>applySSS(b.dataset.sss)));
 document.getElementById('sssOffBtn').addEventListener('click',clearSSS);
 
-/* ── #23 Su Efekti ── */
-let waterMesh=null,waterTime=0,waterActive=false;
-function buildWaterTexture(t){
-  const S=256;const c=document.createElement('canvas');c.width=S;c.height=S;
-  const ctx=c.getContext('2d');
-  ctx.fillStyle='rgba(0,0,0,0)';ctx.clearRect(0,0,S,S);
-  for(let y=0;y<S;y++){for(let x=0;x<S;x++){
-    const v=Math.sin((x/S)*8+t)*Math.sin((y/S)*6+t*1.3)*.5+.5;
-    const a=Math.floor(v*80);
-    ctx.fillStyle=`rgba(100,170,220,${a/255})`;ctx.fillRect(x,y,1,1);
-  }}
-  return new THREE.CanvasTexture(c);
-}
-function toggleWater(on){
-  waterActive=on;
-  const wr=document.getElementById('waterControls');
-  wr.style.opacity=on?'1':'.3';wr.style.pointerEvents=on?'auto':'none';
-  if(!on&&waterMesh){scene.remove(waterMesh);waterMesh.geometry.dispose();waterMesh.material.dispose();waterMesh=null;}
-  else if(on&&!waterMesh){
-    const w=+document.getElementById('ctrlWaterDepth').value;
-    const wMat=new THREE.MeshPhysicalMaterial({color:new THREE.Color(document.getElementById('waterColorPick').value),transparent:true,opacity:.55,roughness:.05,metalness:.1,transmission:.6,thickness:.3,side:THREE.DoubleSide});
-    waterMesh=new THREE.Mesh(new THREE.PlaneGeometry(w*4,w*4,32,32),wMat);
-    waterMesh.rotation.x=-Math.PI/2;waterMesh.position.y=0.002;scene.add(waterMesh);
-  }
-}
-document.getElementById('waterToggle').addEventListener('change',e=>toggleWater(e.target.checked));
-document.getElementById('ctrlWaterDepth').addEventListener('input',e=>{document.getElementById('vWaterDepth').textContent=parseFloat(e.target.value).toFixed(2);if(waterMesh){scene.remove(waterMesh);waterMesh.geometry.dispose();waterMesh.material.dispose();waterMesh=null;if(waterActive)toggleWater(true);}});
-document.getElementById('ctrlWaterSpeed').addEventListener('input',e=>document.getElementById('vWaterSpeed').textContent=parseFloat(e.target.value).toFixed(1));
-document.getElementById('waterColorPick').addEventListener('input',e=>{if(waterMesh)waterMesh.material.color.set(e.target.value);});
 
-/* ── #24 Nem / Buğu ── */
-let condMesh=null,condActive=false;
-function buildCondTexture(density){
-  const S=256;const c=document.createElement('canvas');c.width=S;c.height=S;
-  const ctx=c.getContext('2d');ctx.clearRect(0,0,S,S);
-  const drops=Math.round(density*400);
-  for(let i=0;i<drops;i++){
-    const x=Math.random()*S,y=Math.random()*S;
-    const r=1+Math.random()*4,alpha=0.2+Math.random()*0.5;
-    const g=ctx.createRadialGradient(x,y,0,x,y,r);
-    g.addColorStop(0,`rgba(200,220,255,${alpha})`);
-    g.addColorStop(1,'rgba(200,220,255,0)');
-    ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(x,y,r,r*1.8,Math.random()*Math.PI,0,Math.PI*2);ctx.fill();
-  }
-  return new THREE.CanvasTexture(c);
-}
-function toggleCond(on){
-  condActive=on;
-  const cr=document.getElementById('condControls');
-  cr.style.opacity=on?'1':'.3';cr.style.pointerEvents=on?'auto':'none';
-  const density=+document.getElementById('ctrlCondAmt').value;
-  if(!on&&condMesh){scene.remove(condMesh);condMesh.geometry.dispose();condMesh.material.dispose();condMesh=null;}
-  else if(on){
-    if(condMesh){scene.remove(condMesh);condMesh.geometry.dispose();condMesh.material.dispose();condMesh=null;}
-    const tex=buildCondTexture(density);
-    const mat=new THREE.MeshBasicMaterial({map:tex,transparent:true,opacity:density*.8,side:THREE.FrontSide,depthWrite:false,blending:THREE.AdditiveBlending});
-    // Attach to bottle
-    const box=new THREE.Box3().setFromObject(usingDefault?bottleGroup:loadedGroup||bottleGroup);
-    const sz=box.getSize(new THREE.Vector3());
-    condMesh=new THREE.Mesh(new THREE.CylinderGeometry(sz.x*.55,sz.x*.55,sz.y,32,1,true),mat);
-    condMesh.position.set(0,sz.y/2+box.min.y,0);
-    scene.add(condMesh);
-  }
-}
-document.getElementById('condToggle').addEventListener('change',e=>toggleCond(e.target.checked));
-document.getElementById('ctrlCondAmt').addEventListener('input',e=>{document.getElementById('vCondAmt').textContent=parseFloat(e.target.value).toFixed(2);if(condActive)toggleCond(true);});
 
 /* ── #1 Caustics (Canvas Simülasyonu) ── */
 let causticsActive=false,causticsT=0;
@@ -4386,20 +5181,7 @@ document.getElementById('refApplyBtn').addEventListener('click',()=>{
   toast('✓ Referans renkleri sahneye uygulandı');
 });
 
-/* ── Render loop eklentisi: su animasyonu ── */
-let waterAnimT=0;
-setInterval(()=>{
-  if(!waterActive||!waterMesh)return;
-  waterAnimT+=0.04;
-  const speed=+document.getElementById('ctrlWaterSpeed').value;
-  const pos=waterMesh.geometry.attributes.position;
-  for(let i=0;i<pos.count;i++){
-    const x=pos.getX(i),z=pos.getZ(i);
-    pos.setY(i,Math.sin(x*2+waterAnimT*speed)*0.03+Math.cos(z*3+waterAnimT*speed*0.8)*0.02);
-  }
-  pos.needsUpdate=true;
-  if(waterMesh.material)waterMesh.material.color.set(document.getElementById('waterColorPick').value);
-},50);
+
 
 /* ── Title update ── */
 document.title='Studio Pro V11';
@@ -5243,6 +6025,45 @@ if(btnHolo) {
       });
     }
   });
+}
+
+/* ═══ KİL (CLAY) RENDER MODU ═══ */
+let isClayMode = false;
+const clayMaterial = new THREE.MeshStandardMaterial({
+  color: 0xd8d4cc,
+  roughness: 0.88,
+  metalness: 0.0,
+  clearcoat: 0.0,
+  flatShading: false
+});
+
+function toggleClayMode() {
+  if (typeof mainProductWrapper === 'undefined' || !mainProductWrapper) return;
+  isClayMode = !isClayMode;
+
+  const btn = document.getElementById('clayModeBtn');
+  if (btn) btn.classList.toggle('active', isClayMode);
+
+  if (isClayMode) {
+    mainProductWrapper.traverse(child => {
+      if (child.isMesh && child.material) {
+        if (!originalMaterials.has(child)) originalMaterials.set(child, child.material);
+        child.material = clayMaterial;
+      }
+    });
+    toast(t('🗿 Kil (Clay) Render Modu Aktif'));
+  } else {
+    mainProductWrapper.traverse(child => {
+      if (child.isMesh && originalMaterials.has(child)) {
+        child.material = originalMaterials.get(child);
+      }
+    });
+    toast(t('🎨 Orijinal Kaplamalar Geri Yüklendi'));
+  }
+}
+
+if (document.getElementById('clayModeBtn')) {
+  document.getElementById('clayModeBtn').addEventListener('click', toggleClayMode);
 }
 
 // 3. SİNEMATİK KAMERA
@@ -6316,6 +7137,559 @@ if(btnSelectAI3D) {
     }
   });
 }
+
+/* ═══ ✨ WOW FEATURES IMPLEMENTATION ═══ */
+
+// 1. 360° Turntable Showcase
+let wowTtMesh = null;
+function buildTurntableMesh(matType, thickness) {
+  if (wowTtMesh) {
+    scene.remove(wowTtMesh);
+    wowTtMesh.geometry.dispose();
+    wowTtMesh.material.dispose();
+    wowTtMesh = null;
+  }
+  const h = thickness || 0.6;
+  const geo = new THREE.CylinderGeometry(1.8, 2.0, h, 64);
+  let mat;
+  if (matType === 'gold') {
+    mat = new THREE.MeshStandardMaterial({ color: 0xd4af37, metalness: 0.9, roughness: 0.2 });
+  } else if (matType === 'glass') {
+    mat = new THREE.MeshPhysicalMaterial({ color: 0xffffff, transmission: 0.9, opacity: 0.8, transparent: true, roughness: 0.1, ior: 1.5 });
+  } else if (matType === 'marble') {
+    mat = new THREE.MeshStandardMaterial({ color: 0xf5f5f5, roughness: 0.3, metalness: 0.1 });
+  } else if (matType === 'neon') {
+    mat = new THREE.MeshStandardMaterial({ color: 0xff0055, emissive: 0xff0055, emissiveIntensity: 0.6, roughness: 0.2 });
+  } else if (matType === 'wood') {
+    mat = new THREE.MeshStandardMaterial({ color: 0x8b5a2b, roughness: 0.8, metalness: 0.1 });
+  } else if (matType === 'concrete') {
+    mat = new THREE.MeshStandardMaterial({ color: 0x777777, roughness: 0.95, metalness: 0.05 });
+  } else {
+    mat = new THREE.MeshStandardMaterial({ color: 0x222222, metalness: 0.8, roughness: 0.4 });
+  }
+  wowTtMesh = new THREE.Mesh(geo, mat);
+  wowTtMesh.position.set(0, -h / 2, 0);
+  wowTtMesh.receiveShadow = true;
+  scene.add(wowTtMesh);
+}
+
+if (document.getElementById('wowTurntableToggle')) {
+  document.getElementById('wowTurntableToggle').addEventListener('change', e => {
+    const on = e.target.checked;
+    const c = document.getElementById('wowTurntableControls');
+    c.style.opacity = on ? '1' : '.3';
+    c.style.pointerEvents = on ? 'auto' : 'none';
+    if (on) {
+      const matType = document.getElementById('ctrlWowTtMaterial').value;
+      const h = parseFloat(document.getElementById('ctrlWowTtHeight').value);
+      buildTurntableMesh(matType, h);
+      toast('360° Podyum başlatıldı!');
+    } else {
+      if (wowTtMesh) { scene.remove(wowTtMesh); wowTtMesh.geometry.dispose(); wowTtMesh.material.dispose(); wowTtMesh = null; }
+    }
+  });
+
+  document.getElementById('ctrlWowTtSpeed').addEventListener('input', e => {
+    document.getElementById('vWowTtSpeed').textContent = parseFloat(e.target.value).toFixed(1);
+  });
+
+  document.getElementById('ctrlWowTtHeight').addEventListener('input', e => {
+    const h = parseFloat(e.target.value);
+    document.getElementById('vWowTtHeight').textContent = h.toFixed(2) + 'm';
+    if (document.getElementById('wowTurntableToggle').checked) {
+      buildTurntableMesh(document.getElementById('ctrlWowTtMaterial').value, h);
+    }
+  });
+
+  document.getElementById('ctrlWowTtMaterial').addEventListener('change', e => {
+    if (document.getElementById('wowTurntableToggle').checked) {
+      const h = parseFloat(document.getElementById('ctrlWowTtHeight').value);
+      buildTurntableMesh(e.target.value, h);
+    }
+  });
+}
+
+// 2. Luxury Product Halo & Aura
+let wowHaloMesh = null;
+function updateHaloMesh() {
+  const toggle = document.getElementById('wowHaloToggle');
+  const c = document.getElementById('wowHaloControls');
+  if (!toggle) return;
+
+  const on = toggle.checked;
+  if (c) {
+    c.style.opacity = on ? '1' : '.3';
+    c.style.pointerEvents = on ? 'auto' : 'none';
+  }
+
+  if (!on) {
+    if (wowHaloMesh) {
+      scene.remove(wowHaloMesh);
+      if (wowHaloMesh.geometry) wowHaloMesh.geometry.dispose();
+      if (wowHaloMesh.material) {
+        if (wowHaloMesh.material.map) wowHaloMesh.material.map.dispose();
+        wowHaloMesh.material.dispose();
+      }
+      wowHaloMesh = null;
+    }
+    return;
+  }
+
+  const colorVal = document.getElementById('ctrlWowHaloColor').value;
+  const sizeVal = parseFloat(document.getElementById('ctrlWowHaloSize').value);
+  const opacVal = parseFloat(document.getElementById('ctrlWowHaloOpacity').value);
+  const distVal = parseFloat(document.getElementById('ctrlWowHaloDist').value);
+  const yVal = parseFloat(document.getElementById('ctrlWowHaloY').value);
+
+  // Smooth radial gradient aura canvas
+  const canvas = document.createElement('canvas');
+  canvas.width = 512;
+  canvas.height = 512;
+  const ctx = canvas.getContext('2d');
+
+  const col = new THREE.Color(colorVal);
+  const r = Math.round(col.r * 255);
+  const g = Math.round(col.g * 255);
+  const b = Math.round(col.b * 255);
+
+  const grad = ctx.createRadialGradient(256, 256, 10, 256, 256, 256);
+  grad.addColorStop(0, `rgba(${r},${g},${b}, 1.0)`);
+  grad.addColorStop(0.35, `rgba(${r},${g},${b}, 0.75)`);
+  grad.addColorStop(0.7, `rgba(${r},${g},${b}, 0.25)`);
+  grad.addColorStop(1, `rgba(${r},${g},${b}, 0.0)`);
+
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 512, 512);
+
+  const texture = new THREE.CanvasTexture(canvas);
+
+  if (!wowHaloMesh) {
+    const geo = new THREE.PlaneGeometry(1, 1);
+    const mat = new THREE.MeshBasicMaterial({
+      map: texture,
+      transparent: true,
+      opacity: opacVal,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+      side: THREE.DoubleSide
+    });
+    wowHaloMesh = new THREE.Mesh(geo, mat);
+    scene.add(wowHaloMesh);
+  } else {
+    if (wowHaloMesh.material.map) wowHaloMesh.material.map.dispose();
+    wowHaloMesh.material.map = texture;
+    wowHaloMesh.material.opacity = opacVal;
+    wowHaloMesh.material.needsUpdate = true;
+  }
+
+  wowHaloMesh.scale.set(sizeVal * 2, sizeVal * 2, 1);
+  wowHaloMesh.position.set(0, yVal, -distVal);
+}
+
+if (document.getElementById('wowHaloToggle')) {
+  document.getElementById('wowHaloToggle').addEventListener('change', () => {
+    updateHaloMesh();
+    if (document.getElementById('wowHaloToggle').checked) toast('🌟 Işık Halesi aktif!');
+  });
+  document.getElementById('ctrlWowHaloColor').addEventListener('input', updateHaloMesh);
+  document.getElementById('ctrlWowHaloSize').addEventListener('input', e => {
+    document.getElementById('vWowHaloSize').textContent = parseFloat(e.target.value).toFixed(1) + 'm';
+    updateHaloMesh();
+  });
+  document.getElementById('ctrlWowHaloOpacity').addEventListener('input', e => {
+    document.getElementById('vWowHaloOpacity').textContent = parseFloat(e.target.value).toFixed(2);
+    updateHaloMesh();
+  });
+  document.getElementById('ctrlWowHaloDist').addEventListener('input', e => {
+    document.getElementById('vWowHaloDist').textContent = parseFloat(e.target.value).toFixed(2) + 'm';
+    updateHaloMesh();
+  });
+  document.getElementById('ctrlWowHaloY').addEventListener('input', e => {
+    document.getElementById('vWowHaloY').textContent = parseFloat(e.target.value).toFixed(2) + 'm';
+    updateHaloMesh();
+  });
+}
+
+
+
+
+
+// 4. Social Media Mockup Overlay & 5X 300 DPI High-Res Exporter
+function updateSocialOverlay() {
+  const toggle = document.getElementById('wowSocialToggle');
+  const overlay = document.getElementById('wowSocialOverlay');
+  if (!toggle || !overlay) return;
+  const on = toggle.checked;
+  const c = document.getElementById('wowSocialControls');
+  c.style.opacity = on ? '1' : '.3';
+  c.style.pointerEvents = on ? 'auto' : 'none';
+
+  if (!on) {
+    overlay.style.display = 'none';
+    return;
+  }
+
+  const format = document.getElementById('ctrlWowSocialFormat').value;
+  const style = document.getElementById('ctrlWowSocialStyle') ? document.getElementById('ctrlWowSocialStyle').value : 'neon';
+  const W = innerWidth, H = innerHeight;
+  let ar = 9/16;
+  if (format === 'post') ar = 1/1;
+  else if (format === 'portrait') ar = 4/5;
+  else if (format === 'banner') ar = 16/9;
+  else if (format === 'magazine') ar = 3/4;
+
+  let fw, fh;
+  if (W / H > ar) { fh = H * 0.85; fw = fh * ar; }
+  else { fw = W * 0.85; fh = fw / ar; }
+
+  overlay.style.width = fw + 'px';
+  overlay.style.height = fh + 'px';
+  overlay.style.left = ((W - fw) / 2) + 'px';
+  overlay.style.top = ((H - fh) / 2) + 'px';
+
+  // Apply Frame Style
+  if (style === 'gold') {
+    overlay.style.borderColor = '#d4af37';
+    overlay.style.boxShadow = '0 0 35px rgba(212,175,55,0.4)';
+    document.getElementById('wowSocialBadgeTag').style.background = 'linear-gradient(135deg,#d4af37,#aa7c11)';
+  } else if (style === 'minimal') {
+    overlay.style.borderColor = '#ffffff';
+    overlay.style.boxShadow = '0 0 35px rgba(255,255,255,0.3)';
+    document.getElementById('wowSocialBadgeTag').style.background = 'linear-gradient(135deg,#555555,#222222)';
+  } else {
+    overlay.style.borderColor = '#ff416c';
+    overlay.style.boxShadow = '0 0 35px rgba(255,65,108,0.4)';
+    document.getElementById('wowSocialBadgeTag').style.background = 'linear-gradient(135deg,#ff416c,#ff4b2b)';
+  }
+
+  document.getElementById('wowSocialBadgeTitle').textContent = document.getElementById('wowSocialTitle').value || 'PRO PRODUCT';
+  document.getElementById('wowSocialBadgeTag').textContent = document.getElementById('wowSocialPrice').value || '★ TOP QUALITY ★';
+}
+
+function downloadSocialMockupJPG() {
+  const format = document.getElementById('ctrlWowSocialFormat').value;
+  const style = document.getElementById('ctrlWowSocialStyle') ? document.getElementById('ctrlWowSocialStyle').value : 'neon';
+  const titleText = document.getElementById('wowSocialTitle').value || 'PRO PRODUCT';
+  const priceText = document.getElementById('wowSocialPrice').value || '★ TOP QUALITY ★';
+
+  const overlay = document.getElementById('wowSocialOverlay');
+  if (!overlay || overlay.style.display === 'none') {
+    toast('Lütfen önce Sosyal Medya Kartını açın!');
+    return;
+  }
+
+  // 1. Render current 3D canvas at 4X Ultra Resolution WITHOUT altering camera aspect or FOV!
+  const SCALE = 4;
+  const highResW = Math.round(innerWidth * SCALE);
+  const highResH = Math.round(innerHeight * SCALE);
+  const oldPixelRatio = renderer.getPixelRatio();
+
+  renderer.setPixelRatio(1);
+  renderer.setSize(highResW, highResH, false);
+  renderer.render(scene, camera);
+
+  // Get screen overlay bounding rect
+  const overlayRect = overlay.getBoundingClientRect();
+  const screenW = innerWidth;
+  const screenH = innerHeight;
+
+  // Calculate high-res crop coordinates corresponding EXACTLY to the frame on screen!
+  const cropX = Math.round((overlayRect.left / screenW) * highResW);
+  const cropY = Math.round((overlayRect.top / screenH) * highResH);
+  const cropW = Math.round((overlayRect.width / screenW) * highResW);
+  const cropH = Math.round((overlayRect.height / screenH) * highResH);
+
+  // 2. Offscreen 300 DPI Canvas matching exact frame aspect ratio
+  let baseW = 1080, baseH = 1920;
+  if (format === 'post') { baseW = 1080; baseH = 1080; }
+  else if (format === 'portrait') { baseW = 1080; baseH = 1350; }
+  else if (format === 'banner') { baseW = 1920; baseH = 1080; }
+  else if (format === 'magazine') { baseW = 1200; baseH = 1600; }
+
+  const outW = baseW * 3; // ~3240x5760 px 300 DPI
+  const outH = baseH * 3;
+
+  const canvas2d = document.createElement('canvas');
+  canvas2d.width = outW;
+  canvas2d.height = outH;
+  const ctx = canvas2d.getContext('2d');
+
+  // Fill dark background
+  ctx.fillStyle = '#0a0a0c';
+  ctx.fillRect(0, 0, outW, outH);
+
+  // Draw 3D crop into target canvas with 100% WYSIWYG fidelity!
+  ctx.drawImage(renderer.domElement, cropX, cropY, cropW, cropH, 0, 0, outW, outH);
+
+  // Restore 3D canvas to screen resolution
+  renderer.setPixelRatio(oldPixelRatio);
+  renderer.setSize(screenW, screenH);
+  camera.aspect = screenW / screenH;
+  camera.updateProjectionMatrix();
+
+  // 3. Draw Vector Frame Border (Scaled to outW/outH)
+  const margin = 45;
+  const borderWidth = style === 'minimal' ? 12 : 20;
+
+  ctx.lineWidth = borderWidth;
+  ctx.strokeStyle = style === 'gold' ? '#d4af37' : style === 'minimal' ? '#ffffff' : '#ff416c';
+  ctx.strokeRect(margin, margin, outW - margin * 2, outH - margin * 2);
+
+  if (style === 'neon') {
+    ctx.shadowColor = '#ff416c';
+    ctx.shadowBlur = 40;
+    ctx.strokeRect(margin, margin, outW - margin * 2, outH - margin * 2);
+    ctx.shadowBlur = 0;
+  }
+
+  // Draw Title Text (Top Left)
+  const titleFontSize = Math.round(outH * 0.028);
+  ctx.font = `bold ${titleFontSize}px sans-serif`;
+  ctx.fillStyle = '#ffffff';
+  ctx.shadowColor = 'rgba(0,0,0,0.95)';
+  ctx.shadowBlur = 20;
+  ctx.fillText(titleText, margin + 40, margin + titleFontSize + 20);
+  ctx.shadowBlur = 0;
+
+  // Draw Badge / Price Tag (Bottom Right)
+  const badgeFontSize = Math.round(outH * 0.018);
+  ctx.font = `bold ${badgeFontSize}px sans-serif`;
+  const tagMetrics = ctx.measureText(priceText);
+  const badgePaddingX = 30;
+  const badgeW = tagMetrics.width + badgePaddingX * 2;
+  const badgeH = badgeFontSize * 1.8;
+  const badgeX = outW - margin - badgeW - 40;
+  const badgeY = outH - margin - badgeH - 40;
+
+  const grad = ctx.createLinearGradient(badgeX, badgeY, badgeX + badgeW, badgeY + badgeH);
+  if (style === 'gold') {
+    grad.addColorStop(0, '#d4af37');
+    grad.addColorStop(1, '#aa7c11');
+  } else if (style === 'minimal') {
+    grad.addColorStop(0, '#555555');
+    grad.addColorStop(1, '#222222');
+  } else {
+    grad.addColorStop(0, '#ff416c');
+    grad.addColorStop(1, '#ff4b2b');
+  }
+
+  ctx.fillStyle = grad;
+  ctx.shadowColor = 'rgba(0,0,0,0.7)';
+  ctx.shadowBlur = 25;
+  ctx.beginPath();
+  if (ctx.roundRect) ctx.roundRect(badgeX, badgeY, badgeW, badgeH, 25);
+  else ctx.rect(badgeX, badgeY, badgeW, badgeH);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+
+  ctx.fillStyle = '#ffffff';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(priceText, badgeX + badgeW / 2, badgeY + badgeH / 2 + 3);
+
+  // Helper to patch 300 DPI metadata into JPEG binary header
+  function setJpegDPI(dataURL, dpi) {
+    dpi = dpi || 300;
+    const parts = dataURL.split(',');
+    const mime = parts[0].match(/:(.*?);/)[1];
+    const bstr = atob(parts[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    for (let i = 0; i < n; i++) {
+      u8arr[i] = bstr.charCodeAt(i);
+    }
+
+    if (u8arr[0] === 0xFF && u8arr[1] === 0xD8) {
+      let offset = 2;
+      while (offset < u8arr.length) {
+        if (u8arr[offset] === 0xFF && u8arr[offset + 1] === 0xE0) {
+          u8arr[offset + 11] = 1; // 1 = dots per inch (DPI)
+          u8arr[offset + 12] = (dpi >> 8) & 0xFF; // 300 >> 8 = 1
+          u8arr[offset + 13] = dpi & 0xFF;        // 300 & 0xFF = 44 (0x2C)
+          u8arr[offset + 14] = (dpi >> 8) & 0xFF;
+          u8arr[offset + 15] = dpi & 0xFF;
+          break;
+        }
+        const segLength = (u8arr[offset + 2] << 8) + u8arr[offset + 3];
+        offset += 2 + segLength;
+      }
+    }
+
+    const blob = new Blob([u8arr], { type: mime });
+    return URL.createObjectURL(blob);
+  }
+
+  // Export 300 DPI Ultra High Quality JPG with binary JFIF APP0 header metadata
+  const rawDataURL = canvas2d.toDataURL('image/jpeg', 0.98);
+  const dpiObjectURL = setJpegDPI(rawDataURL, 300);
+
+  const a = document.createElement('a');
+  a.download = `social_mockup_300dpi_${format}_${Date.now()}.jpg`;
+  a.href = dpiObjectURL;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(dpiObjectURL), 10000);
+  toast('📸 Birebir 300 DPI Çözünürlükte JPG İndirildi!');
+}
+
+if (document.getElementById('wowSocialToggle')) {
+  document.getElementById('wowSocialToggle').addEventListener('change', updateSocialOverlay);
+  if (document.getElementById('ctrlWowSocialStyle')) document.getElementById('ctrlWowSocialStyle').addEventListener('change', updateSocialOverlay);
+  document.getElementById('ctrlWowSocialFormat').addEventListener('change', updateSocialOverlay);
+  document.getElementById('wowSocialTitle').addEventListener('input', updateSocialOverlay);
+  document.getElementById('wowSocialPrice').addEventListener('input', updateSocialOverlay);
+  if (document.getElementById('btnWowSocialDownload')) document.getElementById('btnWowSocialDownload').addEventListener('click', downloadSocialMockupJPG);
+  window.addEventListener('resize', updateSocialOverlay);
+}
+
+/* ═══ WOW EXTENDED FEATURES (DISPERSION, SSS, HOLLYWOOD LUTS) ═══ */
+
+// 1. DISPERSION (CAM PRİZMA KANALI)
+if (document.getElementById('wowDispersionToggle')) {
+  document.getElementById('wowDispersionToggle').addEventListener('change', e => {
+    const on = e.target.checked;
+    const c = document.getElementById('wowDispersionControls');
+    if (c) { c.style.opacity = on ? '1' : '.3'; c.style.pointerEvents = on ? 'auto' : 'none'; }
+    const val = on ? parseFloat(document.getElementById('ctrlWowDispersion').value) : 0.0;
+    if (typeof meshLayers !== 'undefined' && meshLayers.length > 0) {
+      meshLayers.forEach(l => { l.dispersion = val; applyMeshMat(l); });
+    } else {
+      applyMat();
+    }
+    if (window.syncPathTracer) window.syncPathTracer(true);
+    toast(on ? '💎 Cam Prizma Saçılımı aktif!' : 'Prizma Saçılımı kapatıldı');
+  });
+
+  document.getElementById('ctrlWowDispersion').addEventListener('input', e => {
+    const val = parseFloat(e.target.value);
+    document.getElementById('vWowDispersion').textContent = val.toFixed(3);
+    if (document.getElementById('wowDispersionToggle').checked) {
+      if (typeof meshLayers !== 'undefined' && meshLayers.length > 0) {
+        meshLayers.forEach(l => { l.dispersion = val; applyMeshMat(l); });
+      } else {
+        applyMat();
+      }
+      if (window.syncPathTracer) window.syncPathTracer(true);
+    }
+  });
+}
+
+// 3. SUBSURFACE SCATTERING (SSS)
+const WOW_SSS_PRESETS = {
+  cosmetic: { color: '#ffeedd', dist: 1.2, trans: 0.85, thick: 1.5 },
+  soap:     { color: '#e8f5e9', dist: 2.0, trans: 0.90, thick: 2.2 },
+  milk:     { color: '#ffffff', dist: 0.8, trans: 0.95, thick: 0.8 },
+  jade:     { color: '#a5d6a7', dist: 1.5, trans: 0.80, thick: 1.8 }
+};
+
+function applyWowSSS(presetKey) {
+  const p = WOW_SSS_PRESETS[presetKey] || WOW_SSS_PRESETS.cosmetic;
+  document.getElementById('ctrlWowSssColor').value = p.color;
+  document.getElementById('ctrlWowSssDist').value = p.dist;
+  document.getElementById('vWowSssDist').textContent = p.dist.toFixed(2) + 'm';
+  
+  if (typeof meshLayers !== 'undefined' && meshLayers.length > 0) {
+    meshLayers.forEach(l => {
+      l.transmission = p.trans;
+      l.attenuationColor = p.color;
+      l.attenuationDistance = p.dist;
+      applyMeshMat(l);
+    });
+  } else {
+    applyMat();
+  }
+  if (window.syncPathTracer) window.syncPathTracer(true);
+  toast('✨ SSS Dokusu uygulandı: ' + presetKey.toUpperCase());
+}
+
+if (document.getElementById('wowSssToggle')) {
+  document.getElementById('wowSssToggle').addEventListener('change', e => {
+    const on = e.target.checked;
+    const c = document.getElementById('wowSssControls');
+    if (c) { c.style.opacity = on ? '1' : '.3'; c.style.pointerEvents = on ? 'auto' : 'none'; }
+    if (on) {
+      const activeBtn = document.querySelector('.sss-preset-btn.active');
+      applyWowSSS(activeBtn ? activeBtn.dataset.sss : 'cosmetic');
+    } else {
+      toast('SSS kapatıldı');
+    }
+  });
+
+  document.querySelectorAll('.sss-preset-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.sss-preset-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      if (document.getElementById('wowSssToggle').checked) {
+        applyWowSSS(btn.dataset.sss);
+      }
+    });
+  });
+
+  document.getElementById('ctrlWowSssColor').addEventListener('input', e => {
+    if (document.getElementById('wowSssToggle').checked) {
+      const color = e.target.value;
+      if (typeof meshLayers !== 'undefined' && meshLayers.length > 0) {
+        meshLayers.forEach(l => { l.attenuationColor = color; applyMeshMat(l); });
+      }
+      if (window.syncPathTracer) window.syncPathTracer(true);
+    }
+  });
+
+  document.getElementById('ctrlWowSssDist').addEventListener('input', e => {
+    const val = parseFloat(e.target.value);
+    document.getElementById('vWowSssDist').textContent = val.toFixed(2) + 'm';
+    if (document.getElementById('wowSssToggle').checked) {
+      if (typeof meshLayers !== 'undefined' && meshLayers.length > 0) {
+        meshLayers.forEach(l => { l.attenuationDistance = val; applyMeshMat(l); });
+      }
+      if (window.syncPathTracer) window.syncPathTracer(true);
+    }
+  });
+}
+
+// 4. HOLLYWOOD LUT COLOR GRADING
+const LUT_PRESETS = {
+  none:       { toneMap: 'aces', exp: 1.0,  vig: 0.0,  sat: 1.0,  con: 1.0  },
+  portra:     { toneMap: 'aces', exp: 1.15, vig: 0.15, sat: 1.1,  con: 1.12 },
+  teal:       { toneMap: 'cineon', exp: 1.05, vig: 0.35, sat: 1.25, con: 1.30 },
+  commercial: { toneMap: 'neutral', exp: 1.30, vig: 0.0,  sat: 1.05, con: 1.10 },
+  moody:      { toneMap: 'reinhard', exp: 0.85, vig: 0.45, sat: 0.90, con: 1.40 },
+  vintage:    { toneMap: 'cineon', exp: 0.95, vig: 0.40, sat: 0.85, con: 0.95 }
+};
+
+function applyWowLUT(lutKey) {
+  const p = LUT_PRESETS[lutKey] || LUT_PRESETS.none;
+  
+  const tmSel = document.getElementById('ctrlToneMap');
+  if (tmSel) {
+    tmSel.value = p.toneMap;
+    tmSel.dispatchEvent(new Event('change'));
+  }
+  
+  const expIn = document.getElementById('ctrlExp');
+  if (expIn) {
+    expIn.value = p.exp;
+    document.getElementById('vExp').textContent = p.exp.toFixed(2);
+    renderer.toneMappingExposure = p.exp;
+  }
+  
+  if (typeof postState !== 'undefined') {
+    postState.vignette = p.vig;
+    if (document.getElementById('ctrlVig')) {
+      document.getElementById('ctrlVig').value = p.vig;
+      document.getElementById('vVig').textContent = p.vig.toFixed(2);
+    }
+  }
+
+  toast('🎬 Hollywood LUT Renk Paleti Uygulandı: ' + lutKey.toUpperCase());
+}
+
+document.querySelectorAll('.lut-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.lut-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    applyWowLUT(btn.dataset.lut);
+  });
+});
 
 })();
 </script>
