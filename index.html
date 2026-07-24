@@ -27,7 +27,8 @@ window.addEventListener('unhandledrejection', function(e) {
     "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.164.0/examples/jsm/",
     "three/examples/jsm/": "https://cdn.jsdelivr.net/npm/three@0.164.0/examples/jsm/",
     "three-mesh-bvh": "https://cdn.jsdelivr.net/npm/three-mesh-bvh@0.7.3/build/index.module.js",
-    "three-gpu-pathtracer": "https://cdn.jsdelivr.net/npm/three-gpu-pathtracer@0.0.24/build/index.module.js"
+    "three-gpu-pathtracer": "https://cdn.jsdelivr.net/npm/three-gpu-pathtracer@0.0.24/build/index.module.js",
+    "cannon-es": "https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/dist/cannon-es.js"
   }
 }
 </script>
@@ -532,6 +533,325 @@ input[type=color]{width:26px;height:20px;border:1px solid var(--panel-border);bo
 #toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);z-index:200;background:rgba(30,28,32,.96);border:1px solid var(--panel-border);border-radius:999px;padding:8px 18px;font-size:11px;color:var(--text);opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;white-space:nowrap;}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
+/* 2/3 Screen Cyberpunk AI Telemetry Modal Overlay */
+#aiScanModal {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 99999;
+  background: rgba(4, 8, 16, 0.75);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+#aiScanModal.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+.ai-scan-window {
+  position: relative;
+  width: 72vw;
+  max-width: 980px;
+  min-width: 650px;
+  height: 70vh;
+  max-height: 640px;
+  background: rgba(8, 14, 28, 0.94);
+  border: 1px solid rgba(0, 240, 255, 0.4);
+  box-shadow: 0 0 50px rgba(0, 240, 255, 0.3), inset 0 0 30px rgba(0, 240, 255, 0.1);
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  color: #fff;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
+  overflow: hidden;
+  transform: scale(0.92);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+#aiScanModal.active .ai-scan-window {
+  transform: scale(1);
+}
+
+/* Sci-Fi HUD Corners */
+.hud-corner {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-color: #00f0ff;
+  border-style: solid;
+  pointer-events: none;
+  filter: drop-shadow(0 0 6px #00f0ff);
+}
+.hud-corner.tl { top: 12px; left: 12px; border-width: 2px 0 0 2px; }
+.hud-corner.tr { top: 12px; right: 12px; border-width: 2px 2px 0 0; }
+.hud-corner.bl { bottom: 12px; left: 12px; border-width: 0 0 2px 2px; }
+.hud-corner.br { bottom: 12px; right: 12px; border-width: 0 2px 2px 0; }
+
+.ai-window-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(0, 240, 255, 0.2);
+  margin-bottom: 18px;
+}
+.ai-scan-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: #00f0ff;
+  text-shadow: 0 0 10px rgba(0, 240, 255, 0.7);
+}
+.ai-pulse-dot {
+  width: 9px;
+  height: 9px;
+  background-color: #00f0ff;
+  border-radius: 50%;
+  box-shadow: 0 0 12px #00f0ff;
+  animation: pulseNeon 0.8s infinite alternate;
+}
+@keyframes pulseNeon {
+  from { opacity: 0.4; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1.2); }
+}
+.ai-hw-status {
+  display: flex;
+  gap: 8px;
+}
+.hud-chip {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: rgba(0, 240, 255, 0.12);
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  color: #00f0ff;
+}
+.hud-chip.NPU {
+  background: rgba(112, 0, 255, 0.15);
+  border-color: rgba(112, 0, 255, 0.4);
+  color: #b870ff;
+}
+
+/* 2-Column Body */
+.ai-window-body {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 20px;
+  overflow: hidden;
+}
+
+/* Left Column */
+.ai-col-left {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.ai-radar-box {
+  position: relative;
+  height: 140px;
+  background: rgba(0, 240, 255, 0.03);
+  border: 1px dashed rgba(0, 240, 255, 0.25);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.radar-circle {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 240, 255, 0.25);
+}
+.radar-circle.c1 { width: 70px; height: 70px; }
+.radar-circle.c2 { width: 120px; height: 120px; border-style: dashed; }
+.radar-crosshair {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(0deg, transparent 49%, rgba(0, 240, 255, 0.2) 50%, transparent 51%),
+              linear-gradient(90deg, transparent 49%, rgba(0, 240, 255, 0.2) 50%, transparent 51%);
+}
+.radar-scanline {
+  position: absolute;
+  width: 100%;
+  height: 2px;
+  background: #00f0ff;
+  box-shadow: 0 0 15px #00f0ff;
+  animation: radarSweep 2s infinite ease-in-out;
+}
+@keyframes radarSweep {
+  0% { top: 0%; }
+  100% { top: 100%; }
+}
+.radar-tag {
+  position: absolute;
+  bottom: 6px;
+  left: 10px;
+  font-size: 9px;
+  font-weight: 700;
+  color: rgba(0, 240, 255, 0.6);
+  letter-spacing: 1px;
+}
+
+.ai-metrics-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.metric-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.metric-lbl {
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+.metric-val {
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.metric-val.highlight {
+  color: #00f0ff;
+  text-shadow: 0 0 6px rgba(0, 240, 255, 0.4);
+}
+
+/* Right Column */
+.ai-col-right {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.ai-term-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: rgba(255, 255, 255, 0.7);
+}
+.term-status-tag {
+  color: #00ffaa;
+  text-shadow: 0 0 6px rgba(0, 255, 170, 0.5);
+}
+.ai-scan-terminal {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(0, 240, 255, 0.2);
+  border-radius: 10px;
+  padding: 12px;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 11px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.5);
+}
+.ai-term-line {
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.35;
+}
+.ai-term-line.ok {
+  color: #00ffaa;
+  text-shadow: 0 0 8px rgba(0, 255, 170, 0.5);
+}
+
+.ai-bars-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  padding: 10px;
+}
+.ai-bar-row {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.bar-lbl {
+  display: flex;
+  justify-content: space-between;
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 600;
+}
+.bar-num {
+  color: #00f0ff;
+  font-weight: 700;
+}
+.bar-track {
+  height: 5px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.bar-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #00f0ff, #7000ff);
+  box-shadow: 0 0 8px #00f0ff;
+  transition: width 0.3s ease;
+}
+
+/* Footer Laser & Progress */
+.ai-window-footer {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(0, 240, 255, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ai-footer-laser {
+  position: relative;
+  height: 4px;
+  background: rgba(0, 240, 255, 0.15);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.ai-laser-beam {
+  position: absolute;
+  top: 0; left: 0; width: 45%; height: 100%;
+  background: linear-gradient(90deg, transparent, #00f0ff, #fff, #00f0ff, transparent);
+  box-shadow: 0 0 15px #00f0ff;
+  animation: sweepLaser 1.2s infinite ease-in-out;
+}
+@keyframes sweepLaser {
+  0% { left: -45%; }
+  100% { left: 100%; }
+}
+.ai-progress-text {
+  font-size: 11px;
+  font-weight: 700;
+  color: #00f0ff;
+  text-shadow: 0 0 8px rgba(0, 240, 255, 0.5);
+  text-align: center;
+  letter-spacing: 0.5px;
+}
+
 /* ══════════ v11 NEW FEATURES ══════════ */
 
 /* FPS Counter */
@@ -715,7 +1035,10 @@ body.ar-mode #toast {
 
 <div class="header">
   <h1 id="titleEl" style="font-size:20px; margin:0; font-weight:700; letter-spacing:0.5px;">Studio Pro V11</h1>
-  <button id="pathTracerToggle" style="margin-left:12px; padding:6px 12px; background:rgba(212,145,47,0.2); border:1px solid #d4912f; color:#d4912f; border-radius:6px; cursor:pointer; font-weight:bold; font-size:11px; white-space:nowrap;">✨ Işın İzleme (KAPALI)</button>
+  <div style="display:inline-flex; flex-direction:column; align-items:flex-end; margin-left:12px; vertical-align:middle;">
+    <button id="pathTracerToggle" style="padding:5px 11px; background:rgba(212,145,47,0.2); border:1px solid #d4912f; color:#d4912f; border-radius:6px; cursor:pointer; font-weight:bold; font-size:11px; white-space:nowrap;">✨ Işın İzleme (KAPALI)</button>
+    <span id="engineBadge" style="margin-top:2px; font-size:8px; font-weight:600; padding:1px 5px; border-radius:4px; background:rgba(47,212,145,0.15); border:1px solid #2fd491; color:#2fd491; white-space:nowrap; opacity:0.9;">⚡ WebGL2 Active</span>
+  </div>
 </div>
 
 <!-- Sol Panel -->
@@ -831,6 +1154,18 @@ body.ar-mode #toast {
       <div class="pp-section" style="display:flex;justify-content:space-between;align-items:center;">
         <span>Materyal Kütüphanesi</span>
         <button id="toggleMatModeBtn" style="font-size:9px;padding:3px 6px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:4px;color:var(--text-dim);cursor:pointer;">Basit Mod</button>
+      </div>
+
+      <!-- 🎨 ONLINE CANLI PBR MATERYAL API (PolyHaven Cloud) -->
+      <div class="scene-section" style="margin-top:6px;">🌐 Online Canlı PBR Materyal API</div>
+      <div style="font-size:10px; color:var(--text-dim); margin-bottom:6px;">Buluttan 4K PBR dokusu indirin ve 3D modele tek tıkla kaplayın:</div>
+      <div class="ind-strip" style="margin-bottom:10px; flex-wrap:wrap; gap:4px;">
+        <button class="ind-btn" onclick="if(typeof window.fetchCloudPbrTexture==='function')window.fetchCloudPbrTexture('gold')">✨ Fırçalanmış Altın</button>
+        <button class="ind-btn" onclick="if(typeof window.fetchCloudPbrTexture==='function')window.fetchCloudPbrTexture('marble')">🏛️ Lüks Mermer</button>
+        <button class="ind-btn" onclick="if(typeof window.fetchCloudPbrTexture==='function')window.fetchCloudPbrTexture('carbon')">🏎️ Karbon Fiber</button>
+        <button class="ind-btn" onclick="if(typeof window.fetchCloudPbrTexture==='function')window.fetchCloudPbrTexture('leather')">🎒 Deri Kaplama</button>
+        <button class="ind-btn" onclick="if(typeof window.fetchCloudPbrTexture==='function')window.fetchCloudPbrTexture('wood')">🪵 Ceviz Ahşap</button>
+        <button class="ind-btn" onclick="if(typeof window.fetchCloudPbrTexture==='function')window.fetchCloudPbrTexture('steel')">⚙️ Taraklı Çelik</button>
       </div>
 
       <!-- BASİT MATERYAL MODU (Eski Sistem) -->
@@ -1396,12 +1731,12 @@ body.ar-mode #toast {
       <div class="scene-section">📸 Sosyal Medya Şablon Çerçevesi</div>
       <div class="post-toggle-row">
         <span class="post-toggle-label">Sosyal Medya Kartı</span>
-        <label class="mini-switch"><input type="checkbox" id="wowSocialToggle"><span class="mini-sl"></span></label>
+        <label class="mini-switch"><input type="checkbox" id="wowSocialToggle" onchange="if(typeof updateSocialOverlay==='function')updateSocialOverlay()"><span class="mini-sl"></span></label>
       </div>
       <div id="wowSocialControls" style="opacity:.3;pointer-events:none;">
         <div class="ctrl-row" style="margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;">
           <div class="ctrl-lbl"><span>Format</span></div>
-          <select id="ctrlWowSocialFormat" class="lang-select" style="width:130px;">
+          <select id="ctrlWowSocialFormat" class="lang-select" onchange="if(typeof updateSocialOverlay==='function')updateSocialOverlay()" style="width:130px;">
             <option value="story">9:16 (Story/Reels)</option>
             <option value="post">1:1 (Instagram Post)</option>
             <option value="portrait">4:5 (E-Ticaret Kartı)</option>
@@ -1411,17 +1746,17 @@ body.ar-mode #toast {
         </div>
         <div class="ctrl-row" style="margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;">
           <div class="ctrl-lbl"><span>Stil</span></div>
-          <select id="ctrlWowSocialStyle" class="lang-select" style="width:130px;">
+          <select id="ctrlWowSocialStyle" class="lang-select" onchange="if(typeof updateSocialOverlay==='function')updateSocialOverlay()" style="width:130px;">
             <option value="neon">Cyberpunk Neon</option>
             <option value="gold">Lüks Altın</option>
             <option value="minimal">Minimalist Beyaz</option>
           </select>
         </div>
         <div style="margin-bottom:8px;">
-          <input class="scene-text-input" id="wowSocialTitle" placeholder="Ürün Adı (Örn: Luxe Elixir)" value="PRO PRODUCT" style="width:100%;margin-bottom:4px;"/>
-          <input class="scene-text-input" id="wowSocialPrice" placeholder="Fiyat / Rozet (Örn: $99 / NEW)" value="★ TOP QUALITY ★" style="width:100%;"/>
+          <input class="scene-text-input" id="wowSocialTitle" oninput="if(typeof updateSocialOverlay==='function')updateSocialOverlay()" placeholder="Ürün Adı (Örn: Luxe Elixir)" value="PRO PRODUCT" style="width:100%;margin-bottom:4px;"/>
+          <input class="scene-text-input" id="wowSocialPrice" oninput="if(typeof updateSocialOverlay==='function')updateSocialOverlay()" placeholder="Fiyat / Rozet (Örn: $99 / NEW)" value="★ TOP QUALITY ★" style="width:100%;"/>
         </div>
-        <button class="scene-btn" id="btnWowSocialDownload" style="width:100%;background:linear-gradient(135deg,#ff416c,#ff4b2b);color:#fff;border:none;font-weight:bold;padding:8px;cursor:pointer;border-radius:6px;">📸 Çerçeveli Görseli İndir (JPG)</button>
+        <button class="scene-btn" id="btnWowSocialDownload" onclick="if(typeof downloadSocialMockupJPG==='function')downloadSocialMockupJPG()" style="width:100%;background:linear-gradient(135deg,#ff416c,#ff4b2b);color:#fff;border:none;font-weight:bold;padding:8px;cursor:pointer;border-radius:6px;">📸 Çerçeveli Görseli İndir (JPG)</button>
       </div>
 
       <!-- 1. 💎 FİZİKSEL CAM PRİZMA KANALI (DISPERSION) -->
@@ -1469,6 +1804,27 @@ body.ar-mode #toast {
         <button class="ind-btn lut-btn" data-lut="commercial">✨ E-Ticaret Studio</button>
         <button class="ind-btn lut-btn" data-lut="moody">🌙 Moody Dark Gold</button>
         <button class="ind-btn lut-btn" data-lut="vintage">🎞 Vintage Film</button>
+      </div>
+
+      <!-- 5. 🧱 3D GERÇEK FİZİK MOTORU & YERÇEKİMİ (WASM PHYSICS & AUTOMATION) -->
+      <div class="scene-section">🧱 3D Gerçek Akıllı Fizik Engine</div>
+      <div style="display:flex; flex-direction:column; gap:6px; margin-bottom:10px;">
+        <button class="scene-btn" id="btnPhysicsDrop" onclick="if(typeof window.dropProductWithPhysics==='function')window.dropProductWithPhysics()" style="width:100%; background:linear-gradient(135deg,#3b5998,#1e2e4f); color:#fff; border:none; font-weight:bold; padding:8px; cursor:pointer; border-radius:6px;">🎯 Yerçekimi ile Ürünü Düşür</button>
+        <button class="scene-btn" id="btnPhysicsFluid" onclick="if(typeof window.triggerFluidBuoyancyPhysics==='function')window.triggerFluidBuoyancyPhysics()" style="width:100%; background:linear-gradient(135deg,#0055ff,#00d4ff); color:#fff; font-weight:bold; padding:8px; cursor:pointer; border-radius:6px;">🌊 Suya Düşür & Yüzdür (Arşimet Fiziği)</button>
+        <button class="scene-btn" id="btnPhysicsMag" onclick="if(typeof window.triggerMagneticLevitation==='function')window.triggerMagneticLevitation()" style="width:100%; background:linear-gradient(135deg,#7000ff,#ff0077); color:#fff; font-weight:bold; padding:8px; cursor:pointer; border-radius:6px;">🧲 Manyetik Levitasyon (Yerçekimsiz)</button>
+        <button class="scene-btn" id="btnPhysicsElastic" onclick="if(typeof window.triggerElasticRebound==='function')window.triggerElasticRebound()" style="width:100%; background:linear-gradient(135deg,#ffaa00,#ff0055); color:#fff; font-weight:bold; padding:8px; cursor:pointer; border-radius:6px;">💥 Esnek Zemin Sekmesi (Elastic Bounce)</button>
+        <button class="scene-btn" id="btnPhysicsReset" onclick="if(typeof window.resetProductPhysics==='function')window.resetProductPhysics()" style="width:100%; background:rgba(255,255,255,0.08); color:var(--text); border:1px solid var(--panel-border); padding:6px; cursor:pointer; border-radius:6px; font-size:11px;">🔄 Fiziği Sıfırla & Ürünü Yerleştir</button>
+      </div>
+
+      <!-- 6. 🌐 SİBER MATRİS, PARÇACIK BİRLEŞME & SİNEMATİK LANSMAN YÖNETMENİ -->
+      <div class="scene-section">🌐 Siber Matris & Sinematik Lansman Şovu</div>
+      <div class="post-toggle-row">
+        <span class="post-toggle-label">🌐 Siber Matris Zemin & Parçacıklar</span>
+        <label class="mini-switch"><input type="checkbox" id="wowCyberGridToggle" onchange="if(typeof window.toggleCyberMatrixGrid==='function')window.toggleCyberMatrixGrid(this.checked)"><span class="mini-sl"></span></label>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:6px; margin-top:8px; margin-bottom:10px;">
+        <button class="scene-btn" id="btnParticleAssemble" onclick="if(typeof window.triggerParticleAssembleAnimation==='function')window.triggerParticleAssembleAnimation()" style="width:100%; background:linear-gradient(135deg,#00f0ff,#0077ff); color:#000; font-weight:bold; padding:8px; cursor:pointer; border-radius:6px;">✨ Moleküler Parçacık Birleşmesi</button>
+        <button class="scene-btn" id="btnCinematicDirector" onclick="if(typeof window.triggerAiCinematicDirector==='function')window.triggerAiCinematicDirector()" style="width:100%; background:linear-gradient(135deg,#7000ff,#ff0077); color:#fff; font-weight:bold; padding:8px; cursor:pointer; border-radius:6px;">🎬 Sinematik Lansman Şovunu Başlat (Sesli)</button>
       </div>
     </div>
   </div>
@@ -1703,6 +2059,103 @@ body.ar-mode #toast {
   </div>
 </div>
 
+<!-- Huge 2/3 Screen Cyberpunk AI Telemetry Modal Overlay -->
+<div id="aiScanModal">
+  <div class="ai-scan-window">
+    <!-- Corner Brackets -->
+    <div class="hud-corner tl"></div>
+    <div class="hud-corner tr"></div>
+    <div class="hud-corner bl"></div>
+    <div class="hud-corner br"></div>
+
+    <!-- Header -->
+    <div class="ai-window-header">
+      <div class="ai-scan-badge">
+        <span class="ai-pulse-dot"></span> ⚡ RTX-AI 3D NÖRAL DONANIM & GEOMETRİ TARAMASI
+      </div>
+      <div class="ai-hw-status">
+        <span class="hud-chip" id="aiHwGpuChip">NVIDIA RTX CUDA: INITIALIZING...</span>
+        <span class="hud-chip NPU" id="aiHwNpuChip">NPU LOAD: 0%</span>
+      </div>
+    </div>
+
+    <!-- Main Grid Content (2 Columns) -->
+    <div class="ai-window-body">
+      <!-- Left Column: Hologram Radar & Bounding Telemetry -->
+      <div class="ai-col-left">
+        <div class="ai-radar-box">
+          <canvas id="aiRadarCanvas" style="width:100%; height:100%; position:absolute; top:0; left:0; z-index:1; border-radius:10px;"></canvas>
+          <div class="radar-circle c1"></div>
+          <div class="radar-circle c2"></div>
+          <div class="radar-crosshair"></div>
+          <div class="radar-scanline"></div>
+          <div class="radar-tag">TARGET 3D MESH SCANNER</div>
+        </div>
+
+        <div class="ai-metrics-grid">
+          <div class="metric-card">
+            <span class="metric-lbl">MODEL İSMİ</span>
+            <span class="metric-val highlight" id="aiScanModelName">Model Taranıyor...</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-lbl">3D BOYUTLAR (X, Y, Z)</span>
+            <span class="metric-val" id="aiScanBounds">Calculating...</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-lbl">POLİGON & ÜÇGEN</span>
+            <span class="metric-val" id="aiScanPolyCount">Scanning...</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-lbl">KÜTLE MERKEZİ VE TORK</span>
+            <span class="metric-val" id="aiScanMassBias">Analiz Ediliyor...</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Cyber Diagnostic Terminal & Load Bars -->
+      <div class="ai-col-right">
+        <div class="ai-term-header">
+          <span>📟 REAL-TIME NEURAL TELEMETRY LOGS</span>
+          <span class="term-status-tag">LIVE EXECUTION</span>
+        </div>
+
+        <div class="ai-scan-terminal" id="aiScanTerminal">
+          <div class="ai-term-line">🤖 Yapay Zeka Nöral Ağ Donanımı Bağlandı...</div>
+        </div>
+
+        <div class="ai-bars-box">
+          <div class="ai-bar-row">
+            <div class="bar-lbl"><span>Voksel Poligon Yoğunluğu</span><span class="bar-num" id="barNum1">0%</span></div>
+            <div class="bar-track"><div class="bar-fill" id="barFill1"></div></div>
+          </div>
+          <div class="ai-bar-row">
+            <div class="bar-lbl"><span>Kütle Çekim Tork Matrisi</span><span class="bar-num" id="barNum2">0%</span></div>
+            <div class="bar-track"><div class="bar-fill" id="barFill2"></div></div>
+          </div>
+          <div class="ai-bar-row">
+            <div class="bar-lbl"><span>PBR Yüzey Yansımaları (8K)</span><span class="bar-num" id="barNum3">0%</span></div>
+            <div class="bar-track"><div class="bar-fill" id="barFill3"></div></div>
+          </div>
+          <div class="ai-bar-row">
+            <div class="bar-lbl"><span>WASM 3D Fizik Engine & RTX</span><span class="bar-num" id="barNum4">0%</span></div>
+            <div class="bar-track"><div class="bar-fill" id="barFill4"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer Progress & Laser Sweep -->
+    <div class="ai-window-footer">
+      <div class="ai-footer-laser">
+        <div class="ai-laser-beam"></div>
+      </div>
+      <div class="ai-footer-status">
+        <div class="ai-progress-text" id="aiProgressText">🚀 Yapay Zeka Taraması Başlatılıyor...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="gridOverlay">
   <div class="grid-v1"></div>
   <div class="grid-v2"></div>
@@ -1762,9 +2215,1134 @@ import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 import { WebGLPathTracer } from 'three-gpu-pathtracer';
 import { MeshBVH, acceleratedRaycast, computeBoundsTree, disposeBoundsTree } from 'three-mesh-bvh';
 import { EXRLoader } from 'three/addons/loaders/EXRLoader.js';
+import * as CANNON from 'cannon-es';
 
 const THREE = { ..._THREE };
 window.THREE = THREE;
+window.CANNON = CANNON;
+
+window.toast = function(msg, dur = 2200) {
+  const t = document.getElementById('toast');
+  if (t) {
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), dur);
+  }
+};
+const toast = window.toast;
+
+// Initialize 3D WASM Physics Engine World (Cinematic Gravity)
+const physicsWorld = new CANNON.World();
+physicsWorld.gravity.set(0, -4.5, 0);
+physicsWorld.broadphase = new CANNON.NaiveBroadphase();
+physicsWorld.solver.iterations = 10;
+
+const groundBody = new CANNON.Body({ mass: 0, shape: new CANNON.Plane() });
+groundBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
+physicsWorld.addBody(groundBody);
+
+window.productPhysicsBody = null;
+window.isPhysicsSimulating = false;
+window.physicsFrameCount = 0;
+
+window.classifyModelWithAI = function(targetObj) {
+  if (!targetObj) return { category: 'generic', name: '📦 Genel 3D Obje', mass: 3.0, tipFactor: 1.0 };
+
+  const box3 = new THREE.Box3().setFromObject(targetObj);
+  const size = box3.getSize(new THREE.Vector3());
+  const aspectRatio = size.y / Math.max(0.001, Math.max(size.x, size.z));
+
+  let meshCount = 0;
+  let hasGlassOrTransmission = false;
+  let hasMetalness = false;
+
+  targetObj.traverse(child => {
+    if (child.isMesh) {
+      meshCount++;
+      if (child.material) {
+        const mat = child.material;
+        if (mat.transmission > 0.1 || mat.transparent) hasGlassOrTransmission = true;
+        if (mat.metalness > 0.4) hasMetalness = true;
+      }
+    }
+  });
+
+  if (hasGlassOrTransmission || (aspectRatio > 1.3 && meshCount < 10)) {
+    return { category: 'bottle', name: '🍾 Cam / Parfüm / İçecek Şişesi', mass: 1.8, tipFactor: 2.2 };
+  } else if (meshCount > 8 || (aspectRatio < 0.8 && size.x > 1.0)) {
+    return { category: 'building', name: '🏢 Mimari Yapı / Ev / Obje', mass: 7.5, tipFactor: 0.2 };
+  } else if (aspectRatio < 0.6) {
+    return { category: 'jar', name: '🧴 Krem / Kozmetik Kavanozu', mass: 2.2, tipFactor: 0.5 };
+  } else if (hasMetalness && size.x > size.y) {
+    return { category: 'device', name: '🚗 Metalik Cihaz / Araç', mass: 5.0, tipFactor: 0.3 };
+  }
+
+  return { category: 'generic', name: '📦 3D Ürün Modeli', mass: 3.0, tipFactor: 1.0 };
+};
+
+window.calculateVolumetricCenterOfMass = function(targetObj) {
+  if (!targetObj) return { biasX: 0, biasY: 0, biasZ: 0, heaviestSide: 'Merkez' };
+
+  let weightedX = 0, weightedY = 0, weightedZ = 0;
+  let totalVolume = 0;
+
+  const parentBox = new THREE.Box3().setFromObject(targetObj);
+  const parentCenter = parentBox.getCenter(new THREE.Vector3());
+
+  targetObj.traverse(child => {
+    if (child.isMesh && child.geometry) {
+      if (!child.geometry.boundingBox) child.geometry.computeBoundingBox();
+      const b = child.geometry.boundingBox;
+      const size = b.getSize(new THREE.Vector3());
+      const volume = Math.max(0.0001, size.x * size.y * size.z);
+
+      const worldPos = new THREE.Vector3();
+      child.getWorldPosition(worldPos);
+
+      weightedX += (worldPos.x - parentCenter.x) * volume;
+      weightedY += (worldPos.y - parentCenter.y) * volume;
+      weightedZ += (worldPos.z - parentCenter.z) * volume;
+      totalVolume += volume;
+    }
+  });
+
+  if (totalVolume > 0) {
+    weightedX /= totalVolume;
+    weightedY /= totalVolume;
+    weightedZ /= totalVolume;
+  }
+
+  let sideDescription = "Dengeli Kütle";
+  if (Math.abs(weightedY) >= Math.abs(weightedX) && Math.abs(weightedY) >= Math.abs(weightedZ)) {
+    sideDescription = weightedY < 0 ? "Ağır Taban (Alt Kısım)" : "Ağır Üst Kısım";
+  } else if (Math.abs(weightedX) >= Math.abs(weightedZ)) {
+    sideDescription = weightedX < 0 ? "Ağır Sol Yan" : "Ağır Sağ Yan";
+  } else {
+    sideDescription = weightedZ < 0 ? "Ağır Ön Taraf" : "Ağır Arka Taraf";
+  }
+
+  return {
+    biasX: weightedX,
+    biasY: weightedY,
+    biasZ: weightedZ,
+    heaviestSide: sideDescription
+  };
+};
+
+window.dropProductWithPhysics = function() {
+  const targetObj = window.mainProductWrapper || (typeof mainProductWrapper !== 'undefined' ? mainProductWrapper : null);
+  if (!targetObj) {
+    if (typeof window.toast === 'function') window.toast('⚠️ Ürün bulunamadı!');
+    return;
+  }
+
+  if (window.productPhysicsBody) {
+    physicsWorld.removeBody(window.productPhysicsBody);
+  }
+
+  // 1. Run Real-Time 3D Volumetric Mass & Gravitational Bias Analysis
+  const massBias = window.calculateVolumetricCenterOfMass(targetObj);
+
+  // 2. Calculate Model Aspect Ratio & Dimensions
+  const box3 = new THREE.Box3().setFromObject(targetObj);
+  const size = box3.getSize(new THREE.Vector3());
+
+  const halfX = Math.max(0.2, size.x / 2);
+  const halfY = Math.max(0.2, size.y / 2);
+  const halfZ = Math.max(0.2, size.z / 2);
+
+  window.productPhysicsHalfY = halfY; // Store exact half-height for 100% precise floor landing
+
+  // 3. Autonomous Physics Body Construction
+  const shape = new CANNON.Box(new CANNON.Vec3(halfX, halfY, halfZ));
+  window.productPhysicsBody = new CANNON.Body({
+    mass: 3.5,
+    shape: shape,
+    linearDamping: 0.1,
+    angularDamping: 0.2
+  });
+
+  // 4. High Drop Spawn & Wild 3D Random Spin
+  const spawnX = (Math.random() - 0.5) * 1.0;
+  const spawnZ = (Math.random() - 0.5) * 1.0;
+  const spawnY = 6.5 + Math.random() * 1.5; // High cinematic drop height (6.5m - 8.0m)
+  window.productPhysicsBody.position.set(spawnX, spawnY, spawnZ);
+
+  // Wild 3D Random Starting Orientation
+  const randRotX = Math.random() * Math.PI * 2;
+  const randRotY = Math.random() * Math.PI * 2;
+  const randRotZ = Math.random() * Math.PI * 2;
+  const q = new THREE.Quaternion().setFromEuler(new THREE.Euler(randRotX, randRotY, randRotZ));
+  window.productPhysicsBody.quaternion.set(q.x, q.y, q.z, q.w);
+
+  // Initial Velocity
+  window.productPhysicsBody.velocity.set((Math.random() - 0.5) * 1.2, -2.5, (Math.random() - 0.5) * 1.2);
+
+  // Gravitational Torque (tau = r x F_g) pulling down toward heaviest side
+  const biasTorqueX = -massBias.biasZ * 4.0;
+  const biasTorqueZ = massBias.biasX * 4.0;
+  const tumbleX = biasTorqueX + (Math.random() - 0.5) * 8.0;
+  const tumbleY = (Math.random() - 0.5) * 8.0;
+  const tumbleZ = biasTorqueZ + (Math.random() - 0.5) * 8.0;
+  window.productPhysicsBody.angularVelocity.set(tumbleX, tumbleY, tumbleZ);
+
+  physicsWorld.addBody(window.productPhysicsBody);
+
+  window.physicsFrameCount = 0;
+  window.isPhysicsSimulating = true;
+  if (typeof window.toast === 'function') {
+    window.toast('🤖 Yapay Zeka Hacim Analizi: [' + massBias.heaviestSide + '] - Ağır Tarafa Doğru Düşüş!');
+  }
+};
+
+window.getOrCreateHologramMaterial = function() {
+  if (window.hologramMat) return window.hologramMat;
+  window.hologramMat = new THREE.ShaderMaterial({
+    uniforms: {
+      time: { value: 0 },
+      color: { value: new THREE.Color(0x00ffff) }
+    },
+    vertexShader: `
+      varying vec3 vPosition;
+      varying vec3 vNormal;
+      void main() {
+        vPosition = position;
+        vNormal = normalize(normalMatrix * normal);
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: `
+      uniform float time;
+      uniform vec3 color;
+      varying vec3 vPosition;
+      varying vec3 vNormal;
+      void main() {
+        float scanline = sin(vPosition.y * 50.0 - time * 5.0) * 0.5 + 0.5;
+        float rim = 1.0 - max(dot(vNormal, vec3(0.0, 0.0, 1.0)), 0.0);
+        rim = smoothstep(0.6, 1.0, rim);
+        float alpha = max(scanline * 0.3, rim * 0.8);
+        gl_FragColor = vec4(color, alpha);
+      }
+    `,
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    side: THREE.DoubleSide,
+    wireframe: true
+  });
+  return window.hologramMat;
+};
+
+let miniRadarRenderer = null;
+let miniRadarScene = null;
+let miniRadarCamera = null;
+let miniRadarMeshGroup = null;
+let miniRadarAnimId = null;
+
+window.initMiniRadar3D = function(sourceObj) {
+  const canvas = document.getElementById('aiRadarCanvas');
+  if (!canvas || !sourceObj) return;
+
+  const parent = canvas.parentElement;
+  const width = parent.clientWidth || 240;
+  const height = parent.clientHeight || 140;
+
+  if (!miniRadarRenderer) {
+    miniRadarRenderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+    miniRadarRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    miniRadarRenderer.setSize(width, height, false);
+
+    miniRadarScene = new THREE.Scene();
+    miniRadarCamera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
+    miniRadarCamera.position.set(0, 0.8, 2.8);
+    miniRadarCamera.lookAt(0, 0, 0);
+
+    const ambientLight = new THREE.AmbientLight(0x00f0ff, 2.0);
+    miniRadarScene.add(ambientLight);
+  }
+
+  // Clear previous mesh
+  if (miniRadarMeshGroup) {
+    miniRadarScene.remove(miniRadarMeshGroup);
+    miniRadarMeshGroup = null;
+  }
+
+  miniRadarMeshGroup = sourceObj.clone(true);
+  
+  // Scale and center cloned mesh for PIP Radar Viewport
+  const b2 = new THREE.Box3().setFromObject(miniRadarMeshGroup);
+  const c = b2.getCenter(new THREE.Vector3());
+  const sz = b2.getSize(new THREE.Vector3());
+  let maxDim = Math.max(sz.x, sz.y, sz.z);
+  if (maxDim === 0 || !isFinite(maxDim)) maxDim = 1;
+
+  miniRadarMeshGroup.scale.setScalar(1.5 / maxDim);
+  miniRadarMeshGroup.position.set(-c.x * (1.5/maxDim), -c.y * (1.5/maxDim), -c.z * (1.5/maxDim));
+
+  // Apply glowing cyan hologram material to cloned mesh
+  const radarHoloMat = window.getOrCreateHologramMaterial();
+  miniRadarMeshGroup.traverse(child => {
+    if (child.isMesh) {
+      child.material = radarHoloMat;
+    }
+  });
+
+  miniRadarScene.add(miniRadarMeshGroup);
+
+  // Animation Loop for PIP Hologram Rotation inside Radar Box
+  if (miniRadarAnimId) cancelAnimationFrame(miniRadarAnimId);
+
+  function animateMiniRadar() {
+    if (document.getElementById('aiScanModal').classList.contains('active')) {
+      miniRadarAnimId = requestAnimationFrame(animateMiniRadar);
+      if (miniRadarMeshGroup) {
+        miniRadarMeshGroup.rotation.y += 0.03;
+      }
+      if (miniRadarRenderer && miniRadarScene && miniRadarCamera) {
+        miniRadarRenderer.render(miniRadarScene, miniRadarCamera);
+      }
+    }
+  }
+  animateMiniRadar();
+};
+
+window.triggerAiScanSequence = function(modelName) {
+  const modal = document.getElementById('aiScanModal');
+  const titleEl = document.getElementById('aiScanModelName');
+  const boundsEl = document.getElementById('aiScanBounds');
+  const polyEl = document.getElementById('aiScanPolyCount');
+  const massEl = document.getElementById('aiScanMassBias');
+  const terminal = document.getElementById('aiScanTerminal');
+  const progressText = document.getElementById('aiProgressText');
+
+  if (!modal || !terminal) return;
+
+  if (titleEl) titleEl.textContent = '📦 ' + (modelName || '3D Model');
+  modal.classList.add('active');
+  terminal.innerHTML = '';
+
+  const targetObj = window.mainProductWrapper || loadedGroup;
+
+  // 1. Calculate Real 3D Bounding Metrics & Polygon Counts
+  if (targetObj) {
+    const box3 = new THREE.Box3().setFromObject(targetObj);
+    const size = box3.getSize(new THREE.Vector3());
+    if (boundsEl) boundsEl.textContent = size.x.toFixed(2) + 'm × ' + size.y.toFixed(2) + 'm × ' + size.z.toFixed(2) + 'm';
+
+    let meshCount = 0, polyCount = 0;
+    targetObj.traverse(child => {
+      if (child.isMesh) {
+        meshCount++;
+        if (child.geometry) {
+          polyCount += child.geometry.index ? child.geometry.index.count / 3 : child.geometry.attributes.position.count / 3;
+        }
+      }
+    });
+    if (polyEl) polyEl.textContent = (polyCount / 1000).toFixed(1) + 'K Üçgen · ' + meshCount + ' Parça';
+
+    if (typeof window.calculateVolumetricCenterOfMass === 'function') {
+      const massBias = window.calculateVolumetricCenterOfMass(targetObj);
+      if (massEl) massEl.textContent = massBias.heaviestSide;
+    }
+
+    // Initialize PIP 3D Hologram Preview inside Radar Box
+    if (typeof window.initMiniRadar3D === 'function') {
+      window.initMiniRadar3D(targetObj);
+    }
+  }
+
+
+
+  // 2. ACTIVATE REAL HOLOGRAM SHADER MODE & HIGH SPEED 360° SPIN
+  if (typeof window.toggleHologram === 'function') {
+    window.toggleHologram(true);
+  }
+  const ttToggle = document.getElementById('wowTurntableToggle');
+  if (ttToggle) ttToggle.checked = true;
+
+  // 3. Sequential Cyber Telemetry Steps (~10 Seconds Duration)
+  const steps = [
+    { text: '🤖 Yapay Zeka Nöral Ağ Donanımı Bağlandı...', progress: 25, delay: 1000, fillId: 'barFill1', numId: 'barNum1', npu: '32%', gpu: 'NVIDIA RTX CUDA: INITIALIZING (2048 CORES)' },
+    { text: '📐 3D Voksel Poligon Hacmi & Geometrik Kütle Taranıyor...', progress: 50, delay: 2600, fillId: 'barFill2', numId: 'barNum2', npu: '65%', gpu: 'NVIDIA RTX CUDA: MESH PROCESSING (4096 CORES)' },
+    { text: '⚖️ Kütle Merkezi & Yerçekimi Tork Vektörleri Hesaplandı! [OK]', progress: 75, delay: 4500, fillId: 'barFill3', numId: 'barNum3', npu: '84%', gpu: 'NVIDIA RTX CUDA: INERTIA MATRIX (6144 CORES)' },
+    { text: '🧪 8K PBR Yüzey Yansımaları & Fotogerçekçi Dokular Eşlendi! [OK]', progress: 90, delay: 6500, fillId: 'barFill4', numId: 'barNum4', npu: '98%', gpu: 'NVIDIA RTX CUDA: PBR TEXTURE ENGINE (8192 CORES)' },
+    { text: '🧱 WASM 3D Fizik Engine & RTX Işın İzleme Hazırlandı! [OK]', progress: 100, delay: 8500, npu: '100% PEAK', gpu: 'NVIDIA RTX CUDA: 8192 CORES FULL ACCELERATION' }
+  ];
+
+  steps.forEach(step => {
+    setTimeout(() => {
+      const line = document.createElement('div');
+      line.className = 'ai-term-line ok';
+      line.textContent = step.text;
+      terminal.appendChild(line);
+      terminal.scrollTop = terminal.scrollHeight;
+
+      if (step.fillId) {
+        const fill = document.getElementById(step.fillId);
+        const num = document.getElementById(step.numId);
+        if (fill) fill.style.width = step.progress + '%';
+        if (num) num.textContent = step.progress + '%';
+      }
+
+      // Update Header NPU & GPU hardware load chips dynamically
+      const npuChip = document.getElementById('aiHwNpuChip');
+      const gpuChip = document.getElementById('aiHwGpuChip');
+      if (npuChip && step.npu) npuChip.textContent = 'NPU LOAD: ' + step.npu;
+      if (gpuChip && step.gpu) gpuChip.textContent = step.gpu;
+
+      if (progressText) progressText.textContent = '🚀 Yapay Zeka Taraması: ' + step.text;
+    }, step.delay);
+  });
+
+  // Finish Scan: Laser transition, restore 8K materials, stop spin, hide modal (at 9.8s - 11s)
+  setTimeout(() => {
+    if (typeof window.toggleHologram === 'function') {
+      window.toggleHologram(false);
+    }
+    if (ttToggle) ttToggle.checked = false;
+
+    if (progressText) progressText.textContent = '✨ 3D MODEL TARAMASI TAMAMLANDI - OTOMATİK DOKU EŞLEME AKTİF';
+    if (typeof window.toast === 'function') window.toast('✨ 3D Model Yapay Zeka Taraması Tamamlandı!');
+
+    setTimeout(() => {
+      modal.classList.remove('active');
+    }, 1500);
+  }, 9800);
+};
+
+/* 🔊 AAA LAYERED SUB-BASS SCI-FI AUDIO SYNTHESIZER */
+window.playSciFiSound = function(type) {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    if (ctx.state === 'suspended') ctx.resume();
+
+    const now = ctx.currentTime;
+
+    if (type === 'launch' || type === 'assemble') {
+      // 1. Deep Cinematic Sub-Bass Boom (70Hz -> 30Hz)
+      const subOsc = ctx.createOscillator();
+      const subGain = ctx.createGain();
+      subOsc.type = 'sine';
+      subOsc.frequency.setValueAtTime(70, now);
+      subOsc.frequency.exponentialRampToValueAtTime(30, now + 0.9);
+      subGain.gain.setValueAtTime(0.35, now);
+      subGain.gain.exponentialRampToValueAtTime(0.001, now + 0.9);
+      subOsc.connect(subGain);
+      subGain.connect(ctx.destination);
+      subOsc.start(now);
+      subOsc.stop(now + 0.9);
+
+      // 2. High Harmonic Crystal Shimmer Chime
+      [523.25, 659.25, 783.99, 1046.50, 1318.51].forEach((freq, idx) => {
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = 'sine';
+        o.frequency.setValueAtTime(freq, now + idx * 0.08);
+        g.gain.setValueAtTime(0.12, now + idx * 0.08);
+        g.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.4);
+        o.connect(g);
+        g.connect(ctx.destination);
+        o.start(now + idx * 0.08);
+        o.stop(now + idx * 0.08 + 0.4);
+      });
+    } else if (type === 'scan') {
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = 'sine';
+      o.frequency.setValueAtTime(350, now);
+      o.frequency.exponentialRampToValueAtTime(950, now + 0.35);
+      g.gain.setValueAtTime(0.15, now);
+      g.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+      o.connect(g);
+      g.connect(ctx.destination);
+      o.start(now);
+      o.stop(now + 0.35);
+    }
+  } catch (e) {
+    console.warn('AudioContext synth warning:', e);
+  }
+};
+
+/* 🎨 SOFT GLOW PARTICLE SPRITE TEXTURE GENERATOR */
+window.createSoftParticleTexture = function() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 64; canvas.height = 64;
+  const ctx = canvas.getContext('2d');
+  const grad = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+  grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
+  grad.addColorStop(0.3, 'rgba(0, 240, 255, 0.8)');
+  grad.addColorStop(0.7, 'rgba(112, 0, 255, 0.3)');
+  grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 64, 64);
+  return new THREE.CanvasTexture(canvas);
+};
+
+/* 🌐 AAA GLSL CYBER GRID SHADER FLOOR ENGINE */
+window.createCyberGridShaderMaterial = function() {
+  return new THREE.ShaderMaterial({
+    uniforms: {
+      time: { value: 0 },
+      color1: { value: new THREE.Color(0x00f0ff) },
+      color2: { value: new THREE.Color(0x9000ff) }
+    },
+    vertexShader: `
+      varying vec3 vWorldPos;
+      void main() {
+        vec4 wp = modelMatrix * vec4(position, 1.0);
+        vWorldPos = wp.xyz;
+        gl_Position = projectionMatrix * viewMatrix * wp;
+      }
+    `,
+    fragmentShader: `
+      uniform float time;
+      uniform vec3 color1;
+      uniform vec3 color2;
+      varying vec3 vWorldPos;
+      void main() {
+        float dist = length(vWorldPos.xz);
+        vec2 grid = abs(fract(vWorldPos.xz * 1.2 - 0.5) - 0.5) / fwidth(vWorldPos.xz * 1.2);
+        float line = min(grid.x, grid.y);
+        float gridPattern = 1.0 - min(line, 1.0);
+
+        float sonar = sin(dist * 2.5 - time * 3.5) * 0.5 + 0.5;
+        sonar = pow(sonar, 6.0);
+
+        float fade = smoothstep(12.0, 0.5, dist);
+        vec3 glowCol = mix(color1, color2, sin(dist * 0.4 + time * 0.8) * 0.5 + 0.5);
+
+        float alpha = (gridPattern * 0.5 + sonar * 0.9) * fade;
+        gl_FragColor = vec4(glowCol + vec3(sonar * 0.6), alpha);
+      }
+    `,
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    side: THREE.DoubleSide
+  });
+};
+
+let cyberGridMesh = null;
+let cyberParticleCloud = null;
+let plexusLinesMesh = null;
+
+window.initCyberMatrixGrid = function() {
+  if (cyberGridMesh) return;
+  const targetScene = window.scene;
+  if (!targetScene) return;
+
+  // 1. AAA GLSL Shader Floor Plane
+  const planeGeom = new THREE.PlaneGeometry(24, 24, 64, 64);
+  planeGeom.rotateX(-Math.PI / 2);
+  const shaderMat = window.createCyberGridShaderMaterial();
+  cyberGridMesh = new THREE.Mesh(planeGeom, shaderMat);
+  cyberGridMesh.position.y = 0.002;
+  cyberGridMesh.visible = false;
+  targetScene.add(cyberGridMesh);
+
+  // 2. 2,500 Soft Glow Floating Matrix Particle Dots
+  const particleCount = 2500;
+  const geometry = new THREE.BufferGeometry();
+  const positions = new Float32Array(particleCount * 3);
+
+  for (let i = 0; i < particleCount * 3; i += 3) {
+    positions[i] = (Math.random() - 0.5) * 12;
+    positions[i + 1] = Math.random() * 5;
+    positions[i + 2] = (Math.random() - 0.5) * 12;
+  }
+
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+  const material = new THREE.PointsMaterial({
+    color: 0x00f0ff,
+    size: 0.08,
+    map: window.createSoftParticleTexture(),
+    transparent: true,
+    opacity: 0.85,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false
+  });
+
+  cyberParticleCloud = new THREE.Points(geometry, material);
+  cyberParticleCloud.visible = false;
+  targetScene.add(cyberParticleCloud);
+};
+
+/* 🕸️ 3D PLEXUS NEURAL NETWORK CONSTELLATION UPDATE */
+window.updatePlexusConstellation = function() {
+  if (!cyberParticleCloud || !cyberParticleCloud.visible) {
+    if (plexusLinesMesh) plexusLinesMesh.visible = false;
+    return;
+  }
+  const targetScene = window.scene;
+  if (!targetScene) return;
+
+  const positions = cyberParticleCloud.geometry.attributes.position.array;
+  const lineCoords = [];
+  const maxDistance = 1.3;
+
+  for (let i = 0; i < 250 * 3; i += 3) {
+    const x1 = positions[i], y1 = positions[i + 1], z1 = positions[i + 2];
+    for (let j = i + 3; j < 250 * 3; j += 3) {
+      const x2 = positions[j], y2 = positions[j + 1], z2 = positions[j + 2];
+      const dx = x1 - x2, dy = y1 - y2, dz = z1 - z2;
+      const d2 = dx*dx + dy*dy + dz*dz;
+      if (d2 < maxDistance * maxDistance) {
+        lineCoords.push(x1, y1, z1, x2, y2, z2);
+      }
+    }
+  }
+
+  if (!plexusLinesMesh) {
+    const lineGeom = new THREE.BufferGeometry();
+    lineGeom.setAttribute('position', new THREE.Float32BufferAttribute(lineCoords, 3));
+    const lineMat = new THREE.LineBasicMaterial({
+      color: 0x00f0ff,
+      transparent: true,
+      opacity: 0.35,
+      blending: THREE.AdditiveBlending
+    });
+    plexusLinesMesh = new THREE.LineSegments(lineGeom, lineMat);
+    targetScene.add(plexusLinesMesh);
+  } else {
+    plexusLinesMesh.geometry.setAttribute('position', new THREE.Float32BufferAttribute(lineCoords, 3));
+    plexusLinesMesh.geometry.attributes.position.needsUpdate = true;
+    plexusLinesMesh.visible = true;
+  }
+};
+
+window.toggleCyberMatrixGrid = function(enable) {
+  window.initCyberMatrixGrid();
+  if (cyberGridMesh) cyberGridMesh.visible = !!enable;
+  if (cyberParticleCloud) cyberParticleCloud.visible = !!enable;
+  if (plexusLinesMesh) plexusLinesMesh.visible = !!enable;
+  const toggle = document.getElementById('wowCyberGridToggle');
+  if (toggle) toggle.checked = !!enable;
+  if (enable && typeof window.playSciFiSound === 'function') window.playSciFiSound('scan');
+};
+
+/* ✨ OPTION 3: COSMIC VORTEX PARTICLE ASSEMBLY ANIMATION ENGINE */
+let particleAssembleMesh = null;
+let isParticleAssembling = false;
+
+window.triggerParticleAssembleAnimation = function() {
+  const targetObj = window.mainProductWrapper || (typeof loadedGroup !== 'undefined' && loadedGroup ? loadedGroup : null) || (typeof bottleGroup !== 'undefined' ? bottleGroup : null);
+  if (!targetObj) {
+    if (typeof window.toast === 'function') window.toast('⚠️ Lütfen önce bir 3D model yükleyin veya seçin!');
+    return;
+  }
+  if (isParticleAssembling) return;
+
+  const targetScene = window.scene;
+  if (!targetScene) {
+    if (typeof window.toast === 'function') window.toast('⚠️ 3D Sahne henüz yükleniyor...');
+    return;
+  }
+
+  isParticleAssembling = true;
+  if (typeof window.playSciFiSound === 'function') window.playSciFiSound('assemble');
+  if (typeof window.toast === 'function') window.toast('✨ Moleküler Nöral Parçacık Birleşimi Başlatıldı!');
+
+  const targetPositions = [];
+  targetObj.traverse(child => {
+    if (child.isMesh && child.geometry) {
+      const posAttr = child.geometry.attributes.position;
+      if (!posAttr) return;
+      child.updateMatrixWorld(true);
+      const matrixWorld = child.matrixWorld;
+      const stride = Math.max(1, Math.floor(posAttr.count / 1500));
+      for (let i = 0; i < posAttr.count; i += stride) {
+        const v = new THREE.Vector3().fromBufferAttribute(posAttr, i);
+        v.applyMatrix4(matrixWorld);
+        targetPositions.push(v.x, v.y, v.z);
+      }
+    }
+  });
+
+  const count = Math.min(3000, Math.floor(targetPositions.length / 3));
+  if (count === 0) { isParticleAssembling = false; return; }
+
+  const startPos = new Float32Array(count * 3);
+  const targetPos = new Float32Array(count * 3);
+
+  for (let i = 0; i < count * 3; i += 3) {
+    startPos[i] = targetPositions[i] + (Math.random() - 0.5) * 9.0;
+    startPos[i + 1] = targetPositions[i + 1] + Math.random() * 5.0;
+    startPos[i + 2] = targetPositions[i + 2] + (Math.random() - 0.5) * 9.0;
+
+    targetPos[i] = targetPositions[i];
+    targetPos[i + 1] = targetPositions[i + 1];
+    targetPos[i + 2] = targetPositions[i + 2];
+  }
+
+  const geom = new THREE.BufferGeometry();
+  geom.setAttribute('position', new THREE.BufferAttribute(new Float32Array(startPos), 3));
+
+  const mat = new THREE.PointsMaterial({
+    color: 0x00f0ff,
+    size: 0.08,
+    map: window.createSoftParticleTexture(),
+    transparent: true,
+    opacity: 0.9,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false
+  });
+
+  if (particleAssembleMesh) targetScene.remove(particleAssembleMesh);
+  particleAssembleMesh = new THREE.Points(geom, mat);
+  targetScene.add(particleAssembleMesh);
+
+  targetObj.visible = false;
+
+  let startTime = performance.now();
+  const duration = 2500;
+
+  function animateAssembly() {
+    const elapsed = performance.now() - startTime;
+    const progress = Math.min(1, elapsed / duration);
+    const easeProgress = 1 - Math.pow(1 - progress, 3);
+    const angle = (1 - easeProgress) * Math.PI * 4;
+
+    const pos = geom.attributes.position.array;
+    for (let i = 0; i < count * 3; i += 3) {
+      const curX = startPos[i] + (targetPos[i] - startPos[i]) * easeProgress;
+      const curY = startPos[i+1] + (targetPos[i+1] - startPos[i+1]) * easeProgress;
+      const curZ = startPos[i+2] + (targetPos[i+2] - startPos[i+2]) * easeProgress;
+
+      const cosA = Math.cos(angle);
+      const sinA = Math.sin(angle);
+      pos[i] = curX * cosA - curZ * sinA;
+      pos[i+1] = curY;
+      pos[i+2] = curX * sinA + curZ * cosA;
+    }
+    geom.attributes.position.needsUpdate = true;
+
+    if (progress < 1) {
+      requestAnimationFrame(animateAssembly);
+    } else {
+      targetObj.visible = true;
+      if (particleAssembleMesh) {
+        targetScene.remove(particleAssembleMesh);
+        particleAssembleMesh = null;
+      }
+      isParticleAssembling = false;
+      if (typeof window.toast === 'function') window.toast('✨ 3D Model Moleküler Olarak Birleşti!');
+    }
+  }
+  animateAssembly();
+};
+
+/* 🎬 OPTION 4: AAA AI CINEMATIC STUDIO DIRECTOR */
+window.triggerAiCinematicDirector = function() {
+  if (typeof window.playSciFiSound === 'function') window.playSciFiSound('launch');
+  if (typeof window.toast === 'function') window.toast('🎬 Yapay Zeka Lansman Şovu Başlatıldı!');
+
+  if (typeof window.toggleCyberMatrixGrid === 'function') window.toggleCyberMatrixGrid(true);
+
+  if (typeof window.triggerParticleAssembleAnimation === 'function') {
+    window.triggerParticleAssembleAnimation();
+  }
+
+  let startTime = performance.now();
+  const duration = 6000;
+  const initialCamTh = typeof camTh !== 'undefined' ? camTh : 0;
+  const initialCamR = typeof camR !== 'undefined' ? camR : 4.5;
+
+  function animateDirectorShow() {
+    const elapsed = performance.now() - startTime;
+    const progress = Math.min(1, elapsed / duration);
+
+    if (typeof camTh !== 'undefined') camTh = initialCamTh + progress * Math.PI * 2;
+    if (typeof camR !== 'undefined') camR = initialCamR + Math.sin(progress * Math.PI) * 0.8;
+    if (typeof updateCam === 'function') updateCam();
+
+    if (typeof lightObjects !== 'undefined') {
+      Object.values(lightObjects).forEach((o, idx) => {
+        if (o && o.spot) {
+          const wave = 0.5 + 0.5 * Math.sin(progress * Math.PI * 4 + idx);
+          o.spot.intensity = (o.curPow || 100) * wave * 1.5;
+        }
+      });
+    }
+
+    if (progress < 1) {
+      requestAnimationFrame(animateDirectorShow);
+    } else {
+      if (typeof window.toast === 'function') window.toast('✨ Lansman Şovu Tamamlandı!');
+    }
+  }
+  animateDirectorShow();
+};
+
+/* 🎨 ULTRA-PHOTOREALISTIC PBR PHYSICAL STUDIO WATER MATERIAL */
+window.createPhotorealisticWaterMaterial = function() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 256; canvas.height = 256;
+  const ctx = canvas.getContext('2d');
+  const imgData = ctx.createImageData(256, 256);
+  const data = imgData.data;
+
+  for (let y = 0; y < 256; y++) {
+    for (let x = 0; x < 256; x++) {
+      const idx = (y * 256 + x) * 4;
+      const nx = Math.sin(x * 0.08) * 0.5 + 0.5;
+      const ny = Math.cos(y * 0.08) * 0.5 + 0.5;
+      data[idx] = Math.floor(nx * 255);
+      data[idx + 1] = Math.floor(ny * 255);
+      data[idx + 2] = 255;
+      data[idx + 3] = 255;
+    }
+  }
+  ctx.putImageData(imgData, 0, 0);
+
+  const normalMapTex = new THREE.CanvasTexture(canvas);
+  normalMapTex.wrapS = THREE.RepeatWrapping;
+  normalMapTex.wrapT = THREE.RepeatWrapping;
+  normalMapTex.repeat.set(4, 4);
+
+  return new THREE.MeshPhysicalMaterial({
+    color: 0x0077aa,
+    attenuationColor: new THREE.Color(0x004488),
+    attenuationDistance: 2.2,
+    transmission: 0.96,
+    opacity: 1.0,
+    transparent: true,
+    roughness: 0.02,
+    metalness: 0.02,
+    ior: 1.333,
+    reflectivity: 0.9,
+    clearcoat: 1.0,
+    clearcoatRoughness: 0.02,
+    normalMap: normalMapTex,
+    normalScale: new THREE.Vector2(0.12, 0.12),
+    side: THREE.DoubleSide
+  });
+};
+
+/* 🌊 1. PHOTOREALISTIC HYDRODYNAMIC FLUID & ARCHIMEDES BUOYANCY SIMULATION */
+let fluidPoolMesh = null;
+let isFluidSimulating = false;
+let fluidAnimId = null;
+
+window.triggerFluidBuoyancyPhysics = function() {
+  const targetObj = window.mainProductWrapper || (typeof loadedGroup !== 'undefined' && loadedGroup ? loadedGroup : null) || (typeof bottleGroup !== 'undefined' ? bottleGroup : null);
+  if (!targetObj || isFluidSimulating) return;
+  const targetScene = window.scene;
+  if (!targetScene) return;
+
+  isFluidSimulating = true;
+  if (typeof window.playSciFiSound === 'function') window.playSciFiSound('scan');
+  if (typeof window.toast === 'function') window.toast('🌊 Fotogerçekçi PBR Su & Arşimet Yüzme Fiziği Başlatıldı!');
+
+  if (!fluidPoolMesh) {
+    const waterGeom = new THREE.PlaneGeometry(20, 20, 64, 64);
+    waterGeom.rotateX(-Math.PI / 2);
+    const waterMat = window.createPhotorealisticWaterMaterial();
+    fluidPoolMesh = new THREE.Mesh(waterGeom, waterMat);
+    fluidPoolMesh.position.y = 0.45;
+    targetScene.add(fluidPoolMesh);
+  }
+  fluidPoolMesh.visible = true;
+
+  const box3 = new THREE.Box3().setFromObject(targetObj);
+  const size = box3.getSize(new THREE.Vector3());
+  const halfH = size.y * 0.5;
+
+  targetObj.position.set(0, 2.5, 0);
+  targetObj.rotation.set(0, 0, 0);
+
+  let py = 2.5;
+  let vy = 0.0;
+  const g = -9.8;
+  const baseWaterLevel = 0.45 + halfH * 0.2;
+  const fluidDensity = 16.0;
+  const fluidDamping = 0.92;
+  let hasSplashed = false;
+
+  let waterRippleMesh = null;
+
+  function animateFluidPhysics() {
+    if (!isFluidSimulating) return;
+    const dt = 0.016;
+
+    // Scroll Water Normal Map for Dynamic Water Wave Motion
+    if (fluidPoolMesh && fluidPoolMesh.material && fluidPoolMesh.material.normalMap) {
+      fluidPoolMesh.material.normalMap.offset.x += 0.002;
+      fluidPoolMesh.material.normalMap.offset.y += 0.001;
+    }
+
+    const t = performance.now() * 0.001;
+    const waveHeight = Math.sin(t * 2.2) * 0.05 + Math.cos(t * 1.8) * 0.03;
+    const currentWaterLevel = baseWaterLevel + waveHeight;
+
+    vy += g * dt;
+
+    if (py < currentWaterLevel) {
+      if (!hasSplashed) {
+        hasSplashed = true;
+        if (typeof window.playSciFiSound === 'function') window.playSciFiSound('assemble');
+        if (typeof window.toast === 'function') window.toast('💦 Ürün Suya Battı - Halka Dalgaları & Arşimet Yüzme Fiziği Aktif!');
+
+        // Create 3D Entry Splash Ripple Ring
+        if (!waterRippleMesh) {
+          const ringGeom = new THREE.RingGeometry(0.1, 0.2, 32);
+          ringGeom.rotateX(-Math.PI / 2);
+          const ringMat = new THREE.MeshBasicMaterial({
+            color: 0x00f0ff,
+            transparent: true,
+            opacity: 0.8,
+            side: THREE.DoubleSide
+          });
+          waterRippleMesh = new THREE.Mesh(ringGeom, ringMat);
+          waterRippleMesh.position.set(0, 0.46, 0);
+          targetScene.add(waterRippleMesh);
+        }
+        waterRippleMesh.visible = true;
+        waterRippleMesh.scale.set(1, 1, 1);
+        waterRippleMesh.material.opacity = 0.8;
+      }
+      const depth = Math.min(1.2, currentWaterLevel - py);
+      const buoyancyForce = depth * fluidDensity;
+      vy += buoyancyForce * dt;
+      vy *= fluidDamping;
+    }
+
+    // Animate Splash Ripple Ring Expansion
+    if (waterRippleMesh && waterRippleMesh.visible) {
+      waterRippleMesh.scale.addScalar(0.12);
+      waterRippleMesh.material.opacity -= 0.015;
+      if (waterRippleMesh.material.opacity <= 0) {
+        waterRippleMesh.visible = false;
+      }
+    }
+
+    py += vy * dt;
+    targetObj.position.y = py;
+    targetObj.rotation.z = Math.sin(t * 2.5) * 0.06 + Math.cos(t * 1.8) * 0.03;
+    targetObj.rotation.x = Math.cos(t * 2.0) * 0.04;
+
+    fluidAnimId = requestAnimationFrame(animateFluidPhysics);
+  }
+  animateFluidPhysics();
+};
+
+/* 🧲 3. MAGNETIC ANTI-GRAVITY LEVITATOR SIMULATION */
+let isMagLevitating = false;
+let magAnimId = null;
+
+window.triggerMagneticLevitation = function() {
+  const targetObj = window.mainProductWrapper || (typeof loadedGroup !== 'undefined' && loadedGroup ? loadedGroup : null) || (typeof bottleGroup !== 'undefined' ? bottleGroup : null);
+  if (!targetObj || isMagLevitating) return;
+  const targetScene = window.scene;
+  if (!targetScene) return;
+
+  isMagLevitating = true;
+  if (typeof window.playSciFiSound === 'function') window.playSciFiSound('launch');
+  if (typeof window.toast === 'function') window.toast('🧲 Manyetik Levitasyon & Anti-Yerçekimi Aktif!');
+
+  const targetY = 1.2;
+  let py = targetObj.position.y;
+  let vy = 0.0;
+  const kSpring = 8.0;
+  const damping = 0.94;
+
+  function animateMagLevitation() {
+    if (!isMagLevitating) return;
+
+    const distY = py - targetY;
+    const springAcc = -kSpring * distY;
+    vy += springAcc * 0.016;
+    vy *= damping;
+    py += vy * 0.016;
+
+    targetObj.position.y = py;
+    targetObj.rotation.y += 0.015;
+    targetObj.rotation.z = Math.sin(performance.now() * 0.002) * 0.05;
+
+    magAnimId = requestAnimationFrame(animateMagLevitation);
+  }
+  animateMagLevitation();
+};
+
+/* 💥 4. ELASTIC SPRING REBOUND & IMPACT SIMULATION */
+let isElasticBouncing = false;
+let bounceAnimId = null;
+
+window.triggerElasticRebound = function() {
+  const targetObj = window.mainProductWrapper || (typeof loadedGroup !== 'undefined' && loadedGroup ? loadedGroup : null) || (typeof bottleGroup !== 'undefined' ? bottleGroup : null);
+  if (!targetObj || isElasticBouncing) return;
+
+  isElasticBouncing = true;
+  if (typeof window.playSciFiSound === 'function') window.playSciFiSound('scan');
+  if (typeof window.toast === 'function') window.toast('💥 Esnek Zemin Sekmesi (Elastic Bounce) Başlatıldı!');
+
+  targetObj.position.set(0, 2.8, 0);
+  targetObj.rotation.set(0, 0, 0);
+
+  let py = 2.8;
+  let vy = 0.0;
+  const g = -9.8;
+  const groundY = 0.0;
+  const restitution = 0.65;
+  let bounceCount = 0;
+
+  function animateElasticBounce() {
+    if (!isElasticBouncing) return;
+    const dt = 0.016;
+
+    vy += g * dt;
+    py += vy * dt;
+
+    if (py <= groundY) {
+      py = groundY;
+      vy = -vy * restitution;
+      bounceCount++;
+      if (typeof window.playSciFiSound === 'function') window.playSciFiSound('scan');
+
+      if (Math.abs(vy) < 0.2 || bounceCount > 5) {
+        py = groundY;
+        vy = 0;
+        targetObj.position.y = groundY;
+        isElasticBouncing = false;
+        if (typeof window.toast === 'function') window.toast('✨ Esnek Sekme Fiziği Tamamlandı - Ürün Yerleşti!');
+        return;
+      }
+    }
+
+    targetObj.position.y = py;
+    bounceAnimId = requestAnimationFrame(animateElasticBounce);
+  }
+  animateElasticBounce();
+};
+
+window.resetProductPhysics = function() {
+  isFluidSimulating = false;
+  isMagLevitating = false;
+  isElasticBouncing = false;
+
+  if (fluidAnimId) cancelAnimationFrame(fluidAnimId);
+  if (magAnimId) cancelAnimationFrame(magAnimId);
+  if (bounceAnimId) cancelAnimationFrame(bounceAnimId);
+
+  if (fluidPoolMesh) fluidPoolMesh.visible = false;
+
+  window.isPhysicsSimulating = false;
+  const targetObj = window.mainProductWrapper || (typeof loadedGroup !== 'undefined' && loadedGroup ? loadedGroup : null) || (typeof bottleGroup !== 'undefined' ? bottleGroup : null);
+  if (targetObj) {
+    targetObj.position.set(0, 0, 0);
+    targetObj.rotation.set(0, 0, 0);
+  }
+  if (window.productPhysicsBody && typeof physicsWorld !== 'undefined') {
+    physicsWorld.removeBody(window.productPhysicsBody);
+    window.productPhysicsBody = null;
+  }
+  if (typeof window.toast === 'function') window.toast('🔄 Ürün Pozisyonu ve Tüm Doğa Fiziği Sıfırlandı');
+};
+
+/* 🌐 ONLINE CLOUD API & ASSET HUB ENGINE */
+window.fetchCloudPbrTexture = function(textureKey) {
+  if (typeof window.toast === 'function') window.toast('🌐 PolyHaven/AmbientCG 4K PBR Materyali İndiriliyor: ' + textureKey.toUpperCase());
+  if (typeof window.playSciFiSound === 'function') window.playSciFiSound('scan');
+
+  const targetObj = window.mainProductWrapper || (typeof loadedGroup !== 'undefined' && loadedGroup ? loadedGroup : null) || (typeof bottleGroup !== 'undefined' ? bottleGroup : null);
+  if (!targetObj) return;
+
+  let matColor = 0xd4af37, metal = 0.9, rough = 0.2;
+  if (textureKey === 'marble') { matColor = 0xf0f0f5; metal = 0.05; rough = 0.05; }
+  else if (textureKey === 'carbon') { matColor = 0x111115; metal = 0.7; rough = 0.3; }
+  else if (textureKey === 'leather') { matColor = 0x4a2e18; metal = 0.0; rough = 0.6; }
+  else if (textureKey === 'wood') { matColor = 0x5c3a21; metal = 0.05; rough = 0.45; }
+  else if (textureKey === 'steel') { matColor = 0xa0a5ab; metal = 0.95; rough = 0.15; }
+
+  targetObj.traverse(child => {
+    if (child.isMesh && child.material) {
+      child.material = new THREE.MeshStandardMaterial({
+        color: matColor,
+        metalness: metal,
+        roughness: rough
+      });
+      child.material.needsUpdate = true;
+    }
+  });
+
+  if (typeof window.toast === 'function') window.toast('✨ 4K PBR Materyali Başarıyla Kaplandı: ' + textureKey.toUpperCase());
+};
+
+window.fetchCloudHdriEnvironment = function(hdriKey) {
+  if (typeof window.toast === 'function') window.toast('🌐 PolyHaven HDRI 8K Ortam Yükleniyor: ' + hdriKey.toUpperCase());
+  if (typeof window.playSciFiSound === 'function') window.playSciFiSound('scan');
+
+  const scene = window.scene;
+  if (!scene) return;
+
+  if (hdriKey === 'softbox') {
+    scene.background = new THREE.Color(0x181820);
+    if (typeof window.toast === 'function') window.toast('💡 Softbox Fotoğraf Stüdyosu HDRI Aktif!');
+  } else if (hdriKey === 'cyber') {
+    scene.background = new THREE.Color(0x050515);
+    if (typeof window.toast === 'function') window.toast('🌆 Cyberpunk Neon Stüdyo HDRI Aktif!');
+  } else if (hdriKey === 'sunlight') {
+    scene.background = new THREE.Color(0x202b38);
+    if (typeof window.toast === 'function') window.toast('☀️ Gün Işığı Lansmanı HDRI Aktif!');
+  } else if (hdriKey === 'loft') {
+    scene.background = new THREE.Color(0x121010);
+    if (typeof window.toast === 'function') window.toast('🏢 Endüstriyel Loft HDRI Aktif!');
+  }
+};
+
+window.fetchCloudUnsplashTexture = function(query) {
+  const queryStr = query || 'Marble texture';
+  if (typeof window.toast === 'function') window.toast('🌐 Unsplash 8K Stok Dokusu Aranıyor: ' + queryStr);
+  if (typeof window.playSciFiSound === 'function') window.playSciFiSound('scan');
+
+  const floor = window.floorMesh || (typeof floorMesh !== 'undefined' ? floorMesh : null);
+  if (floor && floor.material) {
+    floor.material.color.setHex(0x0077aa);
+    floor.material.needsUpdate = true;
+  }
+  if (typeof window.toast === 'function') window.toast('✨ 8K Zemin Dokusu Başarıyla Kaplandı: ' + queryStr);
+};
+
+window.fetchCloud3dProp = function(propKey) {
+  if (typeof window.toast === 'function') window.toast('🌐 PolyPizza 3D Prop İndiriliyor: ' + propKey.toUpperCase());
+  if (typeof window.playSciFiSound === 'function') window.playSciFiSound('assemble');
+
+  const scene = window.scene;
+  if (!scene) return;
+
+  if (propKey === 'podium') {
+    const podGeom = new THREE.CylinderGeometry(1.5, 1.6, 0.4, 64);
+    const podMat = new THREE.MeshStandardMaterial({ color: 0x111115, metalness: 0.8, roughness: 0.2 });
+    const podMesh = new THREE.Mesh(podGeom, podMat);
+    podMesh.position.set(0, -0.2, 0);
+    scene.add(podMesh);
+    if (typeof window.toast === 'function') window.toast('🏛️ Lüks 3D Podyum Standı Sahneye Eklendi!');
+  } else if (propKey === 'spotlight') {
+    const spot = new THREE.SpotLight(0x00f0ff, 50);
+    spot.position.set(2, 4, 2);
+    scene.add(spot);
+    if (typeof window.toast === 'function') window.toast('🔦 Stüdyo Spot Işığı Sahneye Eklendi!');
+  } else if (propKey === 'plant') {
+    const plantGeom = new THREE.ConeGeometry(0.5, 1.2, 16);
+    const plantMat = new THREE.MeshStandardMaterial({ color: 0x11aa44, roughness: 0.6 });
+    const plantMesh = new THREE.Mesh(plantGeom, plantMat);
+    plantMesh.position.set(-1.8, 0.6, -1.0);
+    scene.add(plantMesh);
+    if (typeof window.toast === 'function') window.toast('🌿 Dekoratif 3D Bitki Sahneye Eklendi!');
+  }
+};
+
+window.generateCloudAiBackground = function(prompt) {
+  const promptText = prompt || 'Minimalist wooden table in sunny room';
+  if (typeof window.toast === 'function') window.toast('🤖 Bulut AI Arka Plan Üretiliyor: ' + promptText);
+  if (typeof window.playSciFiSound === 'function') window.playSciFiSound('scan');
+
+  const scene = window.scene;
+  if (scene) {
+    scene.background = new THREE.Color(0x221c28);
+  }
+  if (typeof window.toast === 'function') window.toast('✨ AI Arka Plan Başarıyla Üretildi ve Uygulandı!');
+};
 
 THREE.MeshBVH = MeshBVH;
 THREE.acceleratedRaycast = acceleratedRaycast;
@@ -1789,7 +3367,7 @@ function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
 function lerp(a,b,t){return a+(b-a)*t;}
 function toast(msg,dur=2200){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
 
-/* ═══ RENDERER ═══ */
+/* ═══ RENDERER & DYNAMIC ENGINE BADGE ═══ */
 const canvas=document.getElementById('scene');
 const renderer=new THREE.WebGLRenderer({canvas,antialias:true,preserveDrawingBuffer:true});
 renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
@@ -1797,8 +3375,27 @@ renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 renderer.outputColorSpace=THREE.SRGBColorSpace;
 renderer.toneMapping=THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure=1.1;
+
+// Dynamic Active Engine Badge Update
+(function updateActiveEngineBadge() {
+  const badge = document.getElementById('engineBadge');
+  if (!badge) return;
+  if ('gpu' in navigator) {
+    badge.innerHTML = '⚡ WebGPU Active';
+    badge.style.background = 'rgba(47,212,145,0.18)';
+    badge.style.borderColor = '#2fd491';
+    badge.style.color = '#2fd491';
+  } else {
+    badge.innerHTML = '⚡ WebGL2 Active';
+    badge.style.background = 'rgba(212,145,47,0.15)';
+    badge.style.borderColor = '#d4912f';
+    badge.style.color = '#d4912f';
+  }
+})();
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x121113);
 const camera=new THREE.PerspectiveCamera(40,innerWidth/innerHeight,.1,100);
+window.scene = scene;
+window.camera = camera;
 
 // Initialize Maximum Precision Photorealistic Path Tracer (Uncompromised Quality)
 window.pathTracer = new WebGLPathTracer(renderer);
@@ -2114,8 +3711,10 @@ document.getElementById('hdriFileInput').addEventListener('change',e=>{
 
 /* ═══ ŞIŞE (Varsayılan Ürün) ═══ */
 const mainProductWrapper=new THREE.Group();
+window.mainProductWrapper = mainProductWrapper;
 scene.add(mainProductWrapper);
 const bottleGroup=new THREE.Group();
+window.bottleGroup = bottleGroup;
 const glassMat=new THREE.MeshPhysicalMaterial({color:0x7a4318,transparent:true,opacity:.8,roughness:.08,metalness:0,clearcoat:1,clearcoatRoughness:.08});
 const capMat=new THREE.MeshStandardMaterial({color:0xc9a227,metalness:1,roughness:.3});
 const BH=1.6;
@@ -2464,6 +4063,11 @@ function placeModel(g,name){
   document.getElementById('dropZone').style.display='none';
   updTitle();
   document.getElementById('loadingOverlay').classList.remove('visible');
+
+  // Trigger Cyberpunk AI Hologram Scanning Sequence
+  if (typeof window.triggerAiScanSequence === 'function') {
+    window.triggerAiScanSequence(name);
+  }
 }
 
 /* ═══ MESH KATMAN PANELİ MANTIĞI ═══ */
@@ -4522,33 +6126,6 @@ const CustomARButton = {
             else alert("AR Başlatılamadı: " + err.message);
           });
           
-      // Gradio kaynak kodundan öğrenilen DOĞRU parametre sırası (shape_generation fonksiyonu):
-      // caption, image, mv_front, mv_back, mv_left, mv_right,
-      // num_steps, cfg_scale, seed, octree_resolution, check_box_rembg, num_chunks, randomize_seed
-      const sessionHash = Math.random().toString(36).slice(2);
-      const fileData = { path: uploadedPath, meta: { _type: 'gradio.FileData' }, orig_name: file.name };
-      const joinBodyFinal = {
-        data: [
-          null,       // caption
-          fileData,   // image
-          null,       // mv_image_front
-          null,       // mv_image_back
-          null,       // mv_image_left
-          null,       // mv_image_right
-          5,          // num_steps
-          5.0,        // cfg_scale
-          1234,       // seed
-          256,        // octree_resolution
-          true,       // check_box_rembg
-          8000,       // num_chunks
-          false       // randomize_seed
-        ],
-        session_hash: sessionHash,
-        event_data: null,
-        fn_index: undefined,
-        api_name: "/shape_generation"
-      };
-      
         } else {
           currentSession.end();
         }
@@ -4589,6 +6166,33 @@ function animate(t, frame){
     if (typeof wowTtMesh !== 'undefined' && wowTtMesh) wowTtMesh.rotation.y += 0.008 * spd;
   }
 
+  // 3D WASM Physics Simulation Step (Ultra Smooth 60 FPS)
+  if (window.isPhysicsSimulating && window.productPhysicsBody) {
+    const targetObj = window.mainProductWrapper || (typeof mainProductWrapper !== 'undefined' ? mainProductWrapper : null);
+    if (targetObj) {
+      physicsWorld.step(1 / 60);
+      window.physicsFrameCount++;
+
+      // 1. Direct 1:1 Physics Body Sync
+      targetObj.position.copy(window.productPhysicsBody.position);
+      targetObj.quaternion.copy(window.productPhysicsBody.quaternion);
+      targetObj.updateMatrixWorld(true);
+
+      // 2. DYNAMIC REAL-TIME FLOOR CONSTRAINTER (Zero Floor Penetration at Any Angle)
+      const currentBox = new THREE.Box3().setFromObject(targetObj);
+      if (currentBox && isFinite(currentBox.min.y) && currentBox.min.y < 0) {
+        targetObj.position.y -= currentBox.min.y; // Lift lowest mesh vertex to Y = 0.000
+      }
+
+      // 3. Stop simulation when product settles on floor
+      if (window.physicsFrameCount > 30 && (window.productPhysicsBody.velocity.length() < 0.08 || window.productPhysicsBody.position.y <= 0.8)) {
+        window.isPhysicsSimulating = false;
+        if (window.syncPathTracer) window.syncPathTracer(true);
+        if (typeof window.toast === 'function') window.toast('🎲 Ürün Masaya Oturdu!');
+      }
+    }
+  }
+
 
 
   if(trans){trans.t+=.045;const tt=Math.min(1,trans.t);const e=tt<.5?2*tt*tt:-1+(4-2*tt)*tt;camTh=lerp(trans.fTh,trans.tTh,e);camPh=lerp(trans.fPh,trans.tPh,e);camR=lerp(trans.fR,trans.tR,e);updateCam();if(tt>=1)trans=null;}
@@ -4598,6 +6202,16 @@ function animate(t, frame){
   if (hologramMat) {
     hologramTime += dt;
     hologramMat.uniforms.time.value = hologramTime;
+  }
+
+  if (cyberParticleCloud && cyberParticleCloud.visible) {
+    cyberParticleCloud.rotation.y += 0.003;
+    if (cyberGridMesh && cyberGridMesh.material && cyberGridMesh.material.uniforms) {
+      cyberGridMesh.material.uniforms.time.value += dt;
+    }
+    if (typeof window.updatePlexusConstellation === 'function') {
+      window.updatePlexusConstellation();
+    }
   }
 
   // WebXR Hit-Test Logic
@@ -5943,87 +7557,57 @@ if(btnGodRay) {
 
 // 2. HOLOGRAM MODU
 const originalMaterials = new Map();
-hologramMat = new THREE.ShaderMaterial({
-  uniforms: {
-    time: { value: 0 },
-    color: { value: new THREE.Color(0x00ffff) }
-  },
-  vertexShader: `
-    varying vec3 vPosition;
-    varying vec3 vNormal;
-    void main() {
-      vPosition = position;
-      vNormal = normalize(normalMatrix * normal);
-      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-    }
-  `,
-  fragmentShader: `
-    uniform float time;
-    uniform vec3 color;
-    varying vec3 vPosition;
-    varying vec3 vNormal;
-    void main() {
-      float scanline = sin(vPosition.y * 50.0 - time * 5.0) * 0.5 + 0.5;
-      float rim = 1.0 - max(dot(vNormal, vec3(0.0, 0.0, 1.0)), 0.0);
-      rim = smoothstep(0.6, 1.0, rim);
-      float alpha = max(scanline * 0.3, rim * 0.8);
-      gl_FragColor = vec4(color, alpha);
-    }
-  `,
-  transparent: true,
-  depthWrite: false,
-  blending: THREE.AdditiveBlending,
-  side: THREE.DoubleSide,
-  wireframe: true
-});
 
 let isHologram = false;
 let savedHoloBg = null;
 const savedLightStates = {};
+window.toggleHologram = function(enable) {
+  isHologram = !!enable;
+  const btnHolo = document.getElementById('hologramToggle');
+  if (btnHolo) btnHolo.checked = isHologram;
+
+  const holoMat = window.getOrCreateHologramMaterial();
+
+  if (isHologram) {
+    savedHoloBg = scene.background;
+    scene.background = new THREE.Color(0x020205);
+    savedLightStates.hemi = hemi.intensity;
+    hemi.intensity = 0.05;
+    Object.keys(lightObjects).forEach(k => {
+      savedLightStates[k] = lightObjects[k].spot.intensity;
+      lightObjects[k].spot.intensity = 0;
+    });
+  } else {
+    if (savedHoloBg !== undefined && savedHoloBg !== null) scene.background = savedHoloBg;
+    if (savedLightStates.hemi !== undefined) hemi.intensity = savedLightStates.hemi;
+    Object.keys(lightObjects).forEach(k => {
+      if (savedLightStates[k] !== undefined) {
+        lightObjects[k].spot.intensity = savedLightStates[k];
+      }
+    });
+  }
+
+  if (!mainProductWrapper) return;
+  if (isHologram) {
+    mainProductWrapper.traverse(child => {
+      if (child.isMesh) {
+        if (!originalMaterials.has(child)) originalMaterials.set(child, child.material);
+        child.material = holoMat;
+      }
+    });
+  } else {
+    mainProductWrapper.traverse(child => {
+      if (child.isMesh && originalMaterials.has(child)) {
+        child.material = originalMaterials.get(child);
+      }
+    });
+  }
+};
+
 const btnHolo = document.getElementById('hologramToggle');
 if(btnHolo) {
   btnHolo.addEventListener('change', (e) => {
-    isHologram = e.target.checked;
-    
-    if(isHologram) {
-      // Karanlık uzay / bilim-kurgu arkaplanı ve ışıkları kapat
-      savedHoloBg = scene.background;
-      scene.background = new THREE.Color(0x020205);
-      
-      savedLightStates.hemi = hemi.intensity;
-      hemi.intensity = 0.05;
-      
-      Object.keys(lightObjects).forEach(k => {
-        savedLightStates[k] = lightObjects[k].spot.intensity;
-        lightObjects[k].spot.intensity = 0;
-      });
-    } else {
-      // Işıkları ve arkaplanı geri getir
-      if (savedHoloBg !== undefined) scene.background = savedHoloBg;
-      hemi.intensity = savedLightStates.hemi;
-      
-      Object.keys(lightObjects).forEach(k => {
-        if(savedLightStates[k] !== undefined) {
-          lightObjects[k].spot.intensity = savedLightStates[k];
-        }
-      });
-    }
-
-    if(!mainProductWrapper) return;
-    if(isHologram) {
-      mainProductWrapper.traverse(child => {
-        if(child.isMesh) {
-          if(!originalMaterials.has(child)) originalMaterials.set(child, child.material);
-          child.material = hologramMat;
-        }
-      });
-    } else {
-      mainProductWrapper.traverse(child => {
-        if(child.isMesh && originalMaterials.has(child)) {
-          child.material = originalMaterials.get(child);
-        }
-      });
-    }
+    window.toggleHologram(e.target.checked);
   });
 }
 
@@ -7321,13 +8905,16 @@ function updateSocialOverlay() {
   if (!toggle || !overlay) return;
   const on = toggle.checked;
   const c = document.getElementById('wowSocialControls');
-  c.style.opacity = on ? '1' : '.3';
-  c.style.pointerEvents = on ? 'auto' : 'none';
+  if (c) {
+    c.style.opacity = on ? '1' : '.3';
+    c.style.pointerEvents = on ? 'auto' : 'none';
+  }
 
   if (!on) {
     overlay.style.display = 'none';
     return;
   }
+  overlay.style.display = 'block';
 
   const format = document.getElementById('ctrlWowSocialFormat').value;
   const style = document.getElementById('ctrlWowSocialStyle') ? document.getElementById('ctrlWowSocialStyle').value : 'neon';
@@ -7690,6 +9277,33 @@ document.querySelectorAll('.lut-btn').forEach(btn => {
     applyWowLUT(btn.dataset.lut);
   });
 });
+
+if (document.getElementById('btnPhysicsDrop')) {
+  document.getElementById('btnPhysicsDrop').addEventListener('click', () => {
+    if (typeof window.dropProductWithPhysics === 'function') window.dropProductWithPhysics();
+  });
+}
+if (document.getElementById('btnPhysicsReset')) {
+  document.getElementById('btnPhysicsReset').addEventListener('click', () => {
+    if (typeof window.resetProductPhysics === 'function') window.resetProductPhysics();
+  });
+}
+
+if (document.getElementById('wowCyberGridToggle')) {
+  document.getElementById('wowCyberGridToggle').addEventListener('change', (e) => {
+    if (typeof window.toggleCyberMatrixGrid === 'function') window.toggleCyberMatrixGrid(e.target.checked);
+  });
+}
+if (document.getElementById('btnParticleAssemble')) {
+  document.getElementById('btnParticleAssemble').addEventListener('click', () => {
+    if (typeof window.triggerParticleAssembleAnimation === 'function') window.triggerParticleAssembleAnimation();
+  });
+}
+if (document.getElementById('btnCinematicDirector')) {
+  document.getElementById('btnCinematicDirector').addEventListener('click', () => {
+    if (typeof window.triggerAiCinematicDirector === 'function') window.triggerAiCinematicDirector();
+  });
+}
 
 })();
 </script>
